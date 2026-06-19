@@ -1,5 +1,0 @@
-pre-commit:
-  commands:
-    format:
-      run: bunx biome format --no-errors-on-unmatched --write {staged_files}
-      stage_fixed: true
