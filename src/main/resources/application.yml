@@ -1,0 +1,58 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: BankingApp
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/banking_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:1234}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # 🔥 FIX: validate → update (important for Render / first deploy)
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  jackson:
+    serialization:
+      fail-on-empty-beans: false
+
+jwt:
+  secret: ${JWT_SECRET:v7U3Np8XqK9mL2sR5tYwE6hG9jF0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0uVwX=}
+  expiration: ${JWT_EXPIRATION:86400000}
+
+cloudinary:
+  cloud_name: ${CLOUDINARY_CLOUD_NAME:dcmekes9v}
+  api_key: ${CLOUDINARY_API_KEY:582396436923366}
+  api_secret: ${CLOUDINARY_API_SECRET:YzQ8MG0OuJfUfVe3ftMbRpOiV6I}
+  upload_folder: ${CLOUDINARY_UPLOAD_FOLDER:banking_app_uploads}
+
+logging:
+  level:
+    root: WARN
+    com.ak.BankingApp: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+
+    # 🔥 FIXED: cleaner security logging control
+    org.springframework.security: ERROR
