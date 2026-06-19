@@ -1,287 +1,334 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import {
+  ArrowUpDown,
+  FileText,
+  HelpCircle,
+  LayoutGrid,
+  LogOut,
+  PieChart,
+  Receipt,
+  Settings,
+  Wallet
+} from './Icons'
 
-// Minimal icon components to avoid external dependency
-type IconProps = { size?: number }
-const LayoutGrid = ({ size = 18 }: IconProps) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <rect
-      x="3"
-      y="3"
-      width="8"
-      height="8"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    />
-    <rect
-      x="13"
-      y="3"
-      width="8"
-      height="8"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    />
-    <rect
-      x="3"
-      y="13"
-      width="8"
-      height="8"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    />
-    <rect
-      x="13"
-      y="13"
-      width="8"
-      height="8"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    />
-  </svg>
-)
-
-const Settings = ({ size = 24 }: IconProps) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M12 15.5A3.5 3.5 0 1 0 12 8.5a3.5 3.5 0 0 0 0 7z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    />
-    <path
-      d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06A2 2 0 1 1 2.28 16.9l.06-.06c.45-.45.58-1.1.33-1.82a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09c.7 0 1.27-.4 1.51-1a1.65 1.65 0 0 0-.33-1.82L4.3 4.3A2 2 0 1 1 7.12 1.47l.06.06c.45.45 1.1.58 1.82.33.6-.25 1.26-.25 1.86 0 .72.25 1.37.12 1.82-.33l.06-.06A2 2 0 1 1 19.7 4.3l-.06.06c-.45.45-.58 1.1-.33 1.82.25.6.25 1.26 0 1.86a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83l-.06.06z"
-      stroke="currentColor"
-      strokeWidth="1"
-    />
-  </svg>
-)
-
-const HelpCircle = ({ size = 24 }: IconProps) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" />
-    <path
-      d="M12 17h.01"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-    <path
-      d="M9.5 10a2.5 2.5 0 1 1 5 0c0 1.75-2 2.25-2 3.5"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-    />
-  </svg>
-)
+const menuItems = [
+  { label: 'Dashboard', path: '/dashboard', icon: LayoutGrid },
+  { label: 'Accounts', path: '/bank-accounts', icon: Wallet },
+  { label: 'Transfer', path: '/bank-transfer', icon: ArrowUpDown },
+  { label: 'Pay Bills', path: '/pay-bills', icon: Receipt },
+  { label: 'Smart Spend', path: '/smart-spend', icon: PieChart },
+  { label: 'E-Statement', path: '/e-statement', icon: FileText }
+]
 
 export default function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
 
-  const menuItems = [
-    { label: 'DASHBOARD', path: '/dashboard' },
-    { label: 'ACCOUNTS', path: '/bank-accounts' },
-    { label: 'BANK TRANSFER', path: '/bank-transfer' },
-    { label: 'PAY BILLS', path: '/pay-bills' },
-    { label: 'SMART SPEND', path: '/smart-spend' },
-    { label: 'E-STATEMENT', path: '/e-statement' }
-  ]
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+    } catch {
+      // ignore
+    }
+    router.push('/login')
+  }
 
   return (
-    <aside className="sidebar">
-      <div className="sidebar-top">
-        {/* Logo */}
-        <div className="logo-wrapper">
-          <img src="/loginlogo.png" alt="logo" className="logo-img" />
-          <h1 className="brand-name">NOVA BANK</h1>
+    <aside className="nova-sidebar">
+      {/* Logo */}
+      <div className="sidebar-brand">
+        <div className="brand-logo">
+          <img src="/loginlogo.png" alt="Nova Bank" />
         </div>
-
-        {/* Menu */}
-        <nav className="menu">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.path
-            return (
-              <Link key={item.label} href={item.path} className="menu-link">
-                <button className={`menu-item ${isActive ? 'active' : ''}`}>
-                  {item.label === 'DASHBOARD' && <LayoutGrid size={18} />}
-                  {item.label}
-                </button>
-              </Link>
-            )
-          })}
-        </nav>
+        <h1 className="brand-text">
+          NOVA<span>BANK</span>
+        </h1>
       </div>
 
+      {/* Navigation */}
+      <nav className="sidebar-nav">
+        {menuItems.map((item) => {
+          const isActive = pathname === item.path
+          const IconComp = item.icon
+          return (
+            <Link key={item.path} href={item.path} className="sidebar-link">
+              <div className={`sidebar-item${isActive ? ' active' : ''}`}>
+                <div className="sidebar-icon">
+                  <IconComp size={20} />
+                </div>
+                <span>{item.label}</span>
+              </div>
+            </Link>
+          )
+        })}
+      </nav>
+
+      {/* Footer */}
       <div className="sidebar-footer">
-        <Settings size={24} />
-        <HelpCircle size={24} />
+        <button className="sidebar-footer-btn" aria-label="Settings">
+          <Settings size={20} />
+        </button>
+        <button className="sidebar-footer-btn" aria-label="Help">
+          <HelpCircle size={20} />
+        </button>
+        <button
+          className="sidebar-footer-btn logout"
+          aria-label="Log out"
+          onClick={handleLogout}
+        >
+          <LogOut size={20} />
+        </button>
       </div>
 
       <style jsx>{`
-        .sidebar {
-          width: 250px;
-          background: #450043;
+        .nova-sidebar {
+          width: 260px;
+          background: linear-gradient(180deg, #1d0730 0%, #2e0a46 50%, #1d0730 100%);
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
-          border-radius: 0 25px 25px 0;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+          border-radius: 0 24px 24px 0;
+          box-shadow: 4px 0 24px rgba(29, 7, 48, 0.2);
           flex-shrink: 0;
+          padding: 1.5rem 0;
+          position: relative;
+          overflow: hidden;
         }
 
-        .sidebar-top {
-          display: flex;
-          flex-direction: column;
+        /* Subtle texture overlay */
+        .nova-sidebar::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 32px,
+            rgba(255, 255, 255, 0.015) 32px,
+            rgba(255, 255, 255, 0.015) 33px
+          );
+          pointer-events: none;
         }
 
-        .logo-wrapper {
+        .sidebar-brand {
           display: flex;
           align-items: center;
-          gap: 1rem;
-          padding: 1rem 0.75rem;
+          gap: 0.875rem;
+          padding: 0.5rem 1.25rem 1.75rem;
+          position: relative;
+          z-index: 1;
         }
 
-        .logo-img {
-          width: 75px;
-          height: 75px;
-          border-radius: 50%;
-          background: white;
+        .brand-logo {
+          width: 52px;
+          height: 52px;
+          border-radius: 14px;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .brand-logo img {
+          width: 100%;
+          height: 100%;
           object-fit: cover;
         }
 
-        .brand-name {
-          color: white;
-          font-size: 18px;
+        .brand-text {
+          color: #fff;
+          font-size: 1.15rem;
           font-weight: 800;
-          letter-spacing: 0.5px;
+          letter-spacing: 2px;
+          line-height: 1;
         }
 
-        .menu {
-          margin-top: 3rem;
-          padding: 0 1rem;
+        .brand-text span {
+          display: block;
+          font-weight: 300;
+          font-size: 0.75rem;
+          letter-spacing: 4px;
+          color: rgba(255, 255, 255, 0.6);
+          margin-top: 2px;
+        }
+
+        .sidebar-nav {
+          flex: 1;
+          padding: 0 0.75rem;
           display: flex;
           flex-direction: column;
-          gap: 1rem;
+          gap: 4px;
+          position: relative;
+          z-index: 1;
         }
 
-        .menu-link {
+        .sidebar-link {
           text-decoration: none;
         }
 
-        .menu-item {
-          height: 50px;
-          border: none;
-          background: transparent;
-          color: white;
-          text-align: left;
-          padding: 0 1.5rem;
-          border-radius: 25px;
-          transition: all 0.3s;
-          font-weight: 600;
-          font-size: 0.9rem;
+        .sidebar-item {
           display: flex;
           align-items: center;
           gap: 0.75rem;
+          padding: 0.75rem 1rem;
+          border-radius: 12px;
+          color: rgba(255, 255, 255, 0.65);
+          font-weight: 500;
+          font-size: 0.9rem;
+          transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
           cursor: pointer;
+          border: none;
+          background: transparent;
           width: 100%;
+          text-align: left;
+          position: relative;
         }
 
-        .menu-item.active {
-          background: #9a5c97;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        .sidebar-item:hover {
+          color: rgba(255, 255, 255, 0.95);
+          background: rgba(255, 255, 255, 0.06);
         }
 
-        .menu-item:hover {
-          background: #9a5c97;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        .sidebar-item.active {
+          color: #fff;
+          background: linear-gradient(135deg, rgba(154, 92, 151, 0.5), rgba(122, 45, 120, 0.5));
+          font-weight: 700;
+          box-shadow: 0 4px 16px rgba(69, 0, 67, 0.3);
+        }
+
+        .sidebar-item.active::before {
+          content: '';
+          position: absolute;
+          left: -0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 3px;
+          height: 24px;
+          background: #bde65e;
+          border-radius: 0 3px 3px 0;
+        }
+
+        .sidebar-icon {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          flex-shrink: 0;
+          transition: background 200ms;
+        }
+
+        .sidebar-item.active .sidebar-icon {
+          background: rgba(255, 255, 255, 0.1);
         }
 
         .sidebar-footer {
           display: flex;
-          gap: 1.5rem;
-          padding: 1.5rem;
-          color: white;
+          gap: 0.5rem;
+          padding: 1rem 1.25rem 0.5rem;
+          border-top: 1px solid rgba(255, 255, 255, 0.06);
+          margin-top: 0.5rem;
+          position: relative;
+          z-index: 1;
+        }
+
+        .sidebar-footer-btn {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          border: none;
+          background: transparent;
+          color: rgba(255, 255, 255, 0.45);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 200ms;
+        }
+
+        .sidebar-footer-btn:hover {
+          background: rgba(255, 255, 255, 0.08);
+          color: rgba(255, 255, 255, 0.85);
+        }
+
+        .sidebar-footer-btn.logout:hover {
+          background: rgba(239, 68, 68, 0.15);
+          color: #f87171;
         }
 
         @media (max-width: 768px) {
-          .sidebar {
+          .nova-sidebar {
             width: 100%;
-            border-radius: 0 0 25px 25px;
+            border-radius: 0 0 20px 20px;
             flex-direction: row;
             flex-wrap: wrap;
             padding: 0.75rem 1rem;
             align-items: center;
+            gap: 0.75rem;
           }
 
-          .sidebar-top {
+          .nova-sidebar::before {
+            display: none;
+          }
+
+          .sidebar-brand {
+            padding: 0;
+          }
+
+          .brand-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+          }
+
+          .brand-text {
+            font-size: 0.95rem;
+          }
+          .brand-text span {
+            display: none;
+          }
+
+          .sidebar-nav {
             flex-direction: row;
-            align-items: center;
-            gap: 1rem;
+            flex-wrap: wrap;
+            padding: 0;
+            gap: 2px;
             flex: 1;
           }
 
-          .logo-wrapper {
-            padding: 0;
-          }
-          .logo-img {
-            width: 50px;
-            height: 50px;
-          }
-          .brand-name {
-            font-size: 16px;
-          }
-
-          .menu {
-            flex-direction: row;
-            flex-wrap: wrap;
-            margin-top: 0;
-            padding: 0;
-            gap: 0.5rem;
-          }
-          .menu-item {
-            padding: 0 1rem;
-            height: 40px;
+          .sidebar-item {
+            padding: 0.5rem 0.75rem;
             font-size: 0.75rem;
             white-space: nowrap;
             width: auto;
+            gap: 0.4rem;
+          }
+
+          .sidebar-item.active::before {
+            display: none;
+          }
+
+          .sidebar-icon {
+            width: 24px;
+            height: 24px;
           }
 
           .sidebar-footer {
+            border-top: none;
+            margin-top: 0;
             padding: 0;
-            gap: 1rem;
           }
-        }
 
-        @media (max-width: 480px) {
-          .menu-item {
-            font-size: 0.7rem;
-            padding: 0 0.75rem;
-            height: 34px;
-          }
-          .brand-name {
-            font-size: 14px;
-          }
-          .logo-img {
-            width: 40px;
-            height: 40px;
+          .sidebar-footer-btn {
+            width: 32px;
+            height: 32px;
           }
         }
       `}</style>

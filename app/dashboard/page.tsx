@@ -1,256 +1,411 @@
 'use client'
 
-import Sidebar from '../../components/sidebar'
-import { Bell, ChevronRight, Search } from '../../components/Icons'
-
-const transactions = [
-  {
-    date: 'Oct, 16 2025',
-    account: '......3423',
-    amount: '-Rs. 4500.00'
-  },
-  {
-    date: 'Oct, 16 2025',
-    account: '......4876',
-    amount: '-Rs. 10,000.00'
-  },
-  {
-    date: 'Oct, 16 2025',
-    account: '......6754',
-    amount: '-Rs. 9870.00'
-  }
-]
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { Bell, ChevronRight, Search, TrendingUp } from '@/components/Icons'
+import Sidebar from '@/components/sidebar'
 
 export default function Dashboard() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [accounts, setAccounts] = useState<any[]>([])
+  const [transactions, setTransactions] = useState<any[]>([])
+
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        // 1. Fetch Session
+        const authRes = await fetch('/api/auth/login')
+        if (!authRes.ok) {
+          router.push('/login')
+          return
+        }
+        const authData = await authRes.json()
+        if (!authData.ok) {
+          router.push('/login')
+          return
+        }
+        if (authData.user && authData.user.role === 'admin') {
+          router.push('/admin')
+          return
+        }
+        setUserProfile(authData.user)
+
+        // 2. Fetch Accounts
+        const accsRes = await fetch('/api/accounts')
+        let userAccounts: any[] = []
+        if (accsRes.ok) {
+          const accsData = await accsRes.json()
+          if (accsData.ok) {
+            userAccounts = accsData.accounts || []
+            setAccounts(userAccounts)
+          }
+        }
+
+        // 3. Fetch Transactions
+        const txRes = await fetch('/api/transactions')
+        if (txRes.ok) {
+          const txData = await txRes.json()
+          if (txData.ok && txData.transactions) {
+            const formattedTx = txData.transactions.map((tx: any) => {
+              const isDebit = userAccounts.some(
+                (acc) => acc.account_number === tx.from_account
+              )
+              const type = isDebit ? 'debit' : 'credit'
+              const prefix = isDebit ? '-' : '+'
+              const displayAccount = isDebit
+                ? `To ......${tx.to_account.slice(-4)}`
+                : `From ......${tx.from_account.slice(-4)}`
+
+              return {
+                date: new Date(tx.created_at).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                }),
+                account: displayAccount,
+                amount: `${prefix}Rs. ${parseFloat(tx.amount).toLocaleString(
+                  'en-US',
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }
+                )}`,
+                type,
+                description: tx.description
+              }
+            })
+            setTransactions(formattedTx)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadDashboard()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="dash-loading-screen">
+        <div className="dash-spinner"></div>
+        <p>Loading your dashboard...</p>
+        <style jsx>{`
+          .dash-loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #1d0730;
+            color: #fff;
+            font-family: var(--font-bai), sans-serif;
+            gap: 1.5rem;
+          }
+          .dash-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #bde65e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  const totalBalance = accounts.reduce(
+    (sum, acc) => sum + parseFloat(acc.balance || 0),
+    0
+  )
+  const firstName = userProfile?.full_name
+    ? userProfile.full_name.split(' ')[0]
+    : 'User'
+
+  const quickActions = [
+    { label: 'Transfer', href: '/bank-transfer', emoji: '💸' },
+    { label: 'Pay Bills', href: '/pay-bills', emoji: '🧾' },
+    { label: 'Statement', href: '/e-statement', emoji: '📄' },
+    { label: 'Smart Spend', href: '/smart-spend', emoji: '📊' }
+  ]
+
   return (
-    <main className="dashboard">
+    <div className="page-shell">
       <Sidebar />
 
-      <section className="content">
+      <section className="page-content">
         {/* Header */}
-        <header className="content-header">
-          <h1 className="page-title">Dashboard</h1>
-          <div className="header-actions">
-            <Search size={24} />
-            <Bell size={24} />
-            <img src="/person-logo.png" alt="profile" className="avatar" />
+        <header className="dash-header">
+          <h1 className="dash-title">Dashboard</h1>
+          <div className="dash-header-actions">
+            <button className="dash-icon-btn" aria-label="Search">
+              <Search size={20} />
+            </button>
+            <button className="dash-icon-btn" aria-label="Notifications">
+              <Bell size={20} />
+            </button>
+            <img src="/person-logo.png" alt="Profile" className="dash-avatar" />
           </div>
         </header>
 
-        {/* Top Section */}
-        <div className="top-section">
-          <div className="welcome-card">
-            <h2 className="welcome-title">Welcome back, Dilara!</h2>
-            <div className="balance-card">
-              <p className="balance-label">Current Balance</p>
-              <p className="balance-amount">Rs. 100, 000</p>
-              <ChevronRight className="balance-chevron" size={30} />
-            </div>
-            <div className="carousel-dots">
-              <span className="dot active" />
-              <span className="dot" />
-              <span className="dot" />
-            </div>
-            <img
-              src="/dashboard-logo.png"
-              alt="woman"
-              className="welcome-image"
-            />
-          </div>
-
-          <div className="payees-card">
-            <h3 className="payees-title">Saved Payees</h3>
-            <div className="payees-list">
-              {[1, 2].map((item) => (
-                <div key={item} className="payee-item">
-                  <img src="/person-logo.png" alt="user" className="avatar" />
-                  <div className="payee-info">
-                    <p>HKDS</p>
-                    <p>Wickramanayake</p>
-                  </div>
+        {/* Content */}
+        <div className="dash-content">
+          {/* Welcome + Balance */}
+          <div className="dash-grid animate-fade-in">
+            <div className="welcome-card">
+              <div className="welcome-text">
+                <p className="welcome-greeting">Good evening,</p>
+                <h2 className="welcome-name">{firstName}!</h2>
+                <div className="balance-chip">
+                  <span className="balance-label">Current Balance</span>
+                  <span className="balance-amount">
+                    Rs.{' '}
+                    {totalBalance.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </span>
                 </div>
-              ))}
+              </div>
+              <img
+                src="/Dashboard-logo.png"
+                alt=""
+                className="welcome-illustration"
+              />
             </div>
-            <div className="view-all">
-              View all
-              <ChevronRight size={15} />
+
+            <div className="payees-card">
+              <h3 className="card-heading">Saved Payees</h3>
+              <div className="payees-list">
+                {[1, 2].map((item) => (
+                  <div key={item} className="payee-item">
+                    <img
+                      src="/person-logo.png"
+                      alt="Payee"
+                      className="payee-avatar"
+                    />
+                    <div className="payee-info">
+                      <p className="payee-name">HKDS Wickramanayake</p>
+                      <p className="payee-detail">Nova Bank • Colombo</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button className="view-all-btn">
+                View all <ChevronRight size={14} />
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Transactions */}
-        <div className="transactions-section">
-          <h2 className="transactions-title">Recent Transactions</h2>
-          <div className="transactions-card">
-            {transactions.map((t, index) => (
-              <div key={index} className="transaction-item">
-                <img src="/person-logo.png" alt="user" className="avatar" />
-                <span className="transaction-date">{t.date}</span>
-                <span className="transaction-account">{t.account}</span>
-                <span className="transaction-amount">{t.amount}</span>
-                <span className="transaction-status">Success</span>
-              </div>
+          {/* Quick Actions */}
+          <div className="quick-actions animate-fade-in-delay-1">
+            {quickActions.map((action) => (
+              <a
+                key={action.label}
+                href={action.href}
+                className="quick-action-card"
+              >
+                <span className="quick-action-emoji">{action.emoji}</span>
+                <span className="quick-action-label">{action.label}</span>
+              </a>
             ))}
-            <div className="view-all">
-              View all
-              <ChevronRight size={15} />
+          </div>
+
+          {/* Transactions */}
+          <div className="transactions-section animate-fade-in-delay-2">
+            <div className="section-header">
+              <h2 className="section-title">Recent Transactions</h2>
+              <button className="view-all-btn">
+                View all <ChevronRight size={14} />
+              </button>
+            </div>
+
+            <div className="transactions-card">
+              {transactions.length > 0 ? (
+                transactions.map((t, i) => (
+                  <div key={i} className="transaction-row">
+                    <div className={`transaction-icon ${t.type}`}>
+                      <TrendingUp size={16} />
+                    </div>
+                    <div className="transaction-details">
+                      <span className="transaction-label">{t.account}</span>
+                      <span className="transaction-date">{t.date}</span>
+                      {t.description && (
+                        <span
+                          className="transaction-desc text-muted"
+                          style={{ fontSize: '0.75rem', marginTop: '2px' }}
+                        >
+                          {t.description}
+                        </span>
+                      )}
+                    </div>
+                    <span className={`transaction-amount ${t.type}`}>
+                      {t.amount}
+                    </span>
+                    <span className="transaction-badge">Success</span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-muted">
+                  No recent transactions found.
+                </div>
+              )}
             </div>
           </div>
         </div>
       </section>
 
       <style jsx>{`
-        .dashboard {
-          width: 100vw;
-          min-height: 100vh;
-          background: #f1f1f1;
-          display: flex;
-          gap: 1.5rem;
-          overflow: hidden;
-          font-family: system-ui, -apple-system, sans-serif;
-        }
-
-        .content {
-          flex: 1;
-          padding: 1.5rem 1.25rem;
-          overflow-y: auto;
-          min-width: 0;
-        }
-
-        .content-header {
+        .dash-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
+          padding: 1.5rem 2rem;
           flex-wrap: wrap;
           gap: 1rem;
         }
 
-        .page-title {
-          font-size: 28px;
-          font-weight: 700;
-          color: black;
+        .dash-title {
+          font-size: 1.75rem;
+          font-weight: 800;
+          color: var(--text-primary);
         }
 
-        .header-actions {
+        .dash-header-actions {
           display: flex;
           align-items: center;
-          gap: 1.5rem;
+          gap: 0.75rem;
         }
 
-        .avatar {
-          width: 45px;
-          height: 45px;
-          border-radius: 50%;
-          object-fit: cover;
-        }
-
-        .top-section {
-          margin-top: 1rem;
+        .dash-icon-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          border: none;
+          background: var(--bg-card);
+          color: var(--text-secondary);
           display: flex;
-          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: var(--shadow-sm);
+          transition: all 200ms;
+        }
+
+        .dash-icon-btn:hover {
+          box-shadow: var(--shadow-md);
+          color: var(--plum-600);
+        }
+
+        .dash-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          object-fit: cover;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .dash-content {
+          padding: 0 2rem 2rem;
+        }
+
+        /* Grid */
+        .dash-grid {
+          display: grid;
+          grid-template-columns: 1fr 320px;
           gap: 1.5rem;
         }
 
+        /* Welcome Card */
         .welcome-card {
-          width: 640px;
-          max-width: 100%;
-          height: 230px;
-          background: #e7e1e8;
-          border-radius: 18px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+          background: linear-gradient(135deg, var(--plum-800), var(--plum-900));
+          border-radius: var(--radius-xl);
+          padding: 2rem;
           position: relative;
           overflow: hidden;
-          flex-shrink: 0;
-        }
-
-        .welcome-title {
-          font-size: 18px;
-          padding: 0.75rem 1rem 0;
-          color: black;
-        }
-
-        .balance-card {
-          position: absolute;
-          left: 5rem;
-          top: 60px;
-          width: 380px;
-          max-width: calc(100% - 2rem);
-          height: 120px;
-          background: black;
-          border-radius: 14px;
+          min-height: 220px;
+          display: flex;
+          align-items: flex-start;
           color: white;
+        }
+
+        .welcome-text {
+          position: relative;
+          z-index: 1;
+        }
+
+        .welcome-greeting {
+          font-size: 0.9rem;
+          color: rgba(255, 255, 255, 0.6);
+          margin-bottom: 0.25rem;
+        }
+
+        .welcome-name {
+          font-size: 1.75rem;
+          font-weight: 800;
+          margin-bottom: 1.25rem;
+        }
+
+        .balance-chip {
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 16px;
+          padding: 1rem 1.5rem;
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          padding: 0 1rem;
+          gap: 0.25rem;
         }
 
         .balance-label {
-          font-size: 21px;
+          font-size: 0.8rem;
+          color: rgba(255, 255, 255, 0.6);
         }
 
         .balance-amount {
-          color: #a7d93a;
-          font-size: 20px;
-          margin-top: 0.25rem;
+          font-size: 1.5rem;
+          font-weight: 800;
+          color: var(--citrine-400);
+          font-variant-numeric: tabular-nums;
         }
 
-        .balance-chevron {
+        .welcome-illustration {
           position: absolute;
-          right: 1rem;
-        }
-
-        .carousel-dots {
-          position: absolute;
-          bottom: 1.25rem;
-          left: 160px;
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .dot {
-          width: 6px;
-          height: 3px;
-          background: #9ca3af;
-          border-radius: 2px;
-        }
-        .dot.active {
-          width: 50px;
-          background: #6060d5;
-        }
-
-        .welcome-image {
-          position: absolute;
-          right: 0;
-          bottom: 0;
-          height: 250px;
-          object-fit: cover;
-        }
-
-        .payees-card {
-          width: 270px;
+          right: -10px;
+          bottom: -10px;
           height: 230px;
-          background: white;
-          border-radius: 18px;
-          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-          padding: 1rem;
-          color: black;
-          flex: 1;
-          min-width: 200px;
+          object-fit: contain;
+          opacity: 0.9;
         }
 
-        .payees-title {
-          font-weight: 600;
-          text-align: center;
+        /* Payees Card */
+        .payees-card {
+          background: var(--bg-card);
+          border-radius: var(--radius-xl);
+          padding: 1.5rem;
+          box-shadow: var(--shadow-md);
+          border: 1px solid rgba(0, 0, 0, 0.04);
+        }
+
+        .card-heading {
           font-size: 1rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 1.25rem;
         }
 
         .payees-list {
-          margin-top: 1.5rem;
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 1rem;
         }
 
         .payee-item {
@@ -259,181 +414,216 @@ export default function Dashboard() {
           gap: 0.75rem;
         }
 
-        .payee-info {
-          font-size: 13px;
-          line-height: 1.3;
-        }
-        .payee-info p:first-child {
-          font-weight: 500;
-        }
-        .payee-info p:last-child {
-          color: #4b5563;
+        .payee-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          object-fit: cover;
         }
 
-        .view-all {
-          text-align: right;
-          margin-top: 1rem;
-          font-size: 13px;
+        .payee-info {
+          flex: 1;
+        }
+
+        .payee-name {
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .payee-detail {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+        }
+
+        .view-all-btn {
           display: flex;
-          justify-content: flex-end;
           align-items: center;
           gap: 0.25rem;
-          cursor: default;
+          background: none;
+          border: none;
+          color: var(--plum-500);
+          font-weight: 600;
+          font-size: 0.8rem;
+          cursor: pointer;
+          margin-top: 1rem;
+          margin-left: auto;
+          transition: color 200ms;
         }
 
+        .view-all-btn:hover {
+          color: var(--plum-700);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
+          margin-top: 1.5rem;
+        }
+
+        .quick-action-card {
+          background: var(--bg-card);
+          border-radius: var(--radius-lg);
+          padding: 1.25rem 1rem;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          box-shadow: var(--shadow-sm);
+          border: 1px solid rgba(0, 0, 0, 0.04);
+          text-decoration: none;
+          transition: all 200ms var(--ease-out);
+        }
+
+        .quick-action-card:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-md);
+        }
+
+        .quick-action-emoji {
+          font-size: 1.5rem;
+        }
+
+        .quick-action-label {
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+        }
+
+        /* Transactions */
         .transactions-section {
-          margin-top: 0.75rem;
-          color: black;
+          margin-top: 1.5rem;
         }
 
-        .transactions-title {
-          font-size: 18px;
+        .section-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1rem;
+        }
+
+        .section-title {
+          font-size: 1.1rem;
           font-weight: 700;
-          margin-bottom: 0.75rem;
+          color: var(--text-primary);
         }
 
         .transactions-card {
-          background: white;
-          border-radius: 22px;
-          box-shadow: 18px 18px 12px rgba(0, 0, 0, 0.15);
-          padding: 1.25rem;
-          width: 1000px;
-          height: 200px;
-          max-width: 100%;
-          overflow-x: auto;
+          background: var(--bg-card);
+          border-radius: var(--radius-xl);
+          box-shadow: var(--shadow-md);
+          border: 1px solid rgba(0, 0, 0, 0.04);
+          overflow: hidden;
         }
 
-        .transaction-item {
+        .transaction-row {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          margin-bottom: 1rem;
-          gap: 0.75rem;
-          flex-wrap: wrap;
+          gap: 1rem;
+          padding: 1rem 1.5rem;
+          transition: background 150ms;
         }
 
-        .transaction-date,
-        .transaction-account,
-        .transaction-amount {
-          font-size: 0.95rem;
+        .transaction-row:hover {
+          background: var(--ivory-50);
         }
 
-        .transaction-status {
-          background: #d5f1cb;
-          padding: 0.25rem 1.5rem;
-          border-radius: 4px;
-          color: black;
+        .transaction-row:not(:last-child) {
+          border-bottom: 1px solid var(--ivory-200);
+        }
+
+        .transaction-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .transaction-icon.debit {
+          background: var(--error-bg);
+          color: var(--error);
+        }
+
+        .transaction-icon.credit {
+          background: var(--success-bg);
+          color: var(--success);
+        }
+
+        .transaction-details {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .transaction-label {
           font-size: 0.9rem;
-          white-space: nowrap;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .transaction-date {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+        }
+
+        .transaction-amount {
+          font-size: 0.9rem;
+          font-weight: 700;
+          font-variant-numeric: tabular-nums;
+        }
+
+        .transaction-amount.debit {
+          color: var(--error);
+        }
+
+        .transaction-amount.credit {
+          color: var(--success);
+        }
+
+        .transaction-badge {
+          font-size: 0.7rem;
+          font-weight: 600;
+          background: var(--success-bg);
+          color: var(--success);
+          padding: 0.25rem 0.75rem;
+          border-radius: var(--radius-pill);
         }
 
         @media (max-width: 1024px) {
-          .welcome-card {
-            width: 100%;
-          }
-          .transactions-card {
-            width: 100%;
+          .dash-grid {
+            grid-template-columns: 1fr;
           }
         }
 
         @media (max-width: 768px) {
-          .dashboard {
-            flex-direction: column;
-            gap: 0;
-          }
-
-          .content {
+          .dash-header {
             padding: 1rem;
           }
-
-          .page-title {
-            font-size: 22px;
+          .dash-content {
+            padding: 0 1rem 1rem;
           }
-
-          .top-section {
-            flex-direction: column;
-            align-items: stretch;
+          .quick-actions {
+            grid-template-columns: repeat(2, 1fr);
           }
-
-          .welcome-card {
-            height: 220px;
-          }
-          .balance-card {
-            width: calc(100% - 2rem);
-            left: 1rem;
-            top: 50px;
-            height: 100px;
-          }
-          .balance-label {
-            font-size: 18px;
-          }
-          .balance-amount {
-            font-size: 18px;
-          }
-          .welcome-image {
+          .welcome-illustration {
             height: 160px;
-          }
-          .carousel-dots {
-            left: 1.5rem;
-            bottom: 0.75rem;
-          }
-
-          .payees-card {
-            width: 100%;
-            height: auto;
-            min-height: 200px;
-          }
-
-          .transactions-card {
-            padding: 1rem;
-          }
-
-          .transaction-item {
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            border-bottom: 1px solid #f0f0f0;
-            padding-bottom: 0.75rem;
-          }
-          .transaction-item:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-          }
-          .transaction-status {
-            padding: 0.15rem 1rem;
-            font-size: 0.8rem;
           }
         }
 
         @media (max-width: 480px) {
-          .header-actions {
-            gap: 0.75rem;
-          }
-          .avatar {
-            width: 35px;
-            height: 35px;
-          }
-          .page-title {
-            font-size: 20px;
-          }
-          .balance-label {
-            font-size: 16px;
+          .dash-title {
+            font-size: 1.25rem;
           }
           .balance-amount {
-            font-size: 16px;
-          }
-          .welcome-card {
-            height: 200px;
-          }
-          .welcome-image {
-            height: 130px;
-          }
-          .transaction-date,
-          .transaction-account,
-          .transaction-amount {
-            font-size: 0.8rem;
+            font-size: 1.2rem;
           }
         }
       `}</style>
-    </main>
+    </div>
   )
 }

@@ -1,128 +1,417 @@
+'use client'
+
+import { useState } from 'react'
+import { Bell, Search } from '@/components/Icons'
 import Sidebar from '@/components/sidebar'
 
 export default function EStatementPage() {
-  return (
-    <div className="min-h-screen bg-bg-light font-geist p-0">
-      <div className="flex min-h-screen">
-        <Sidebar />
+  const [accountNumber, setAccountNumber] = useState('')
 
-        <main className="flex-1 p-12 text-black">
-          <div className="mb-10 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold">E-Statement</h2>
-            <div className="flex items-center gap-3">
-              <button className="topbar-icon" aria-label="search">
-                <img src="/search.png" alt="search" />
-              </button>
-              <button className="topbar-icon" aria-label="notifications">
-                <img src="/notification.png" alt="notifications" />
-              </button>
-              <div className="size-12 overflow-hidden rounded-full border-2 border-gray-200">
-                <img
-                  src="/avatar.png"
-                  alt="avatar"
-                  className="size-full bg-white object-cover"
-                />
-              </div>
-            </div>
+  // Mock data — in production, this would fetch from /api/transactions
+  const mockStatement =
+    accountNumber.length >= 6
+      ? {
+          holder: 'Dilara Perera',
+          account: accountNumber,
+          period: 'Oct 1, 2025 — Oct 31, 2025',
+          branch: 'Colombo 05',
+          opening: '142,000.00',
+          credits: '9,870.00',
+          debits: '14,500.00',
+          closing: '137,370.00',
+          transactions: [
+            {
+              date: 'Oct 05',
+              desc: 'Lunch money',
+              ref: 'TXN001',
+              debit: '4,500.00',
+              credit: '',
+              balance: '137,500.00'
+            },
+            {
+              date: 'Oct 12',
+              desc: 'Totally normal fee',
+              ref: 'TXN002',
+              debit: '10,000.00',
+              credit: '',
+              balance: '127,500.00'
+            },
+            {
+              date: 'Oct 20',
+              desc: 'Refund maybe',
+              ref: 'TXN003',
+              debit: '',
+              credit: '9,870.00',
+              balance: '137,370.00'
+            }
+          ]
+        }
+      : null
+
+  return (
+    <div className="page-shell">
+      <Sidebar />
+
+      <main className="page-content">
+        <header className="es-header">
+          <h1 className="es-title">E-Statement</h1>
+          <div className="es-header-actions">
+            <button className="es-icon-btn" aria-label="Search">
+              <Search size={20} />
+            </button>
+            <button className="es-icon-btn" aria-label="Notifications">
+              <Bell size={20} />
+            </button>
+            <img src="/person-logo.png" alt="Profile" className="es-avatar" />
+          </div>
+        </header>
+
+        <div className="es-body">
+          {/* Account Input */}
+          <div className="nova-card es-input-card animate-fade-in">
+            <form
+              onSubmit={(e) => e.preventDefault()}
+              className="es-input-form"
+            >
+              <label htmlFor="statement-account" className="es-input-label">
+                Enter account number:
+              </label>
+              <input
+                id="statement-account"
+                inputMode="numeric"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                className="nova-input es-account-input"
+                placeholder="e.g. 1000003423"
+              />
+            </form>
           </div>
 
-          <form className="rounded-[32px] bg-white px-10 py-8 text-black shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)]">
-            <label
-              htmlFor="statement-account-number"
-              className="grid items-end gap-6 text-xl md:grid-cols-[auto_1fr]"
-            >
-              <span>Enter account number:</span>
-              <input
-                id="statement-account-number"
-                inputMode="numeric"
-                className="min-w-0 border-0 border-b border-black bg-transparent px-2 py-1 text-xl text-black outline-none"
-              />
-            </label>
-          </form>
-
-          <section
-            aria-label="Bank statement preview"
-            className="mt-6 min-h-[560px] bg-[#e7e7e7] px-7 py-9 text-black"
-          >
-            <div className="max-w-full">
-              <img
-                src="/loginlogo.png"
-                alt="Nova Bank"
-                className="size-[86px] rounded-full object-cover"
-              />
-
-              <div className="mt-5 text-sm leading-tight">
-                <h2 className="font-bold">Bank Statement</h2>
-                <dl>
-                  <div>
-                    <dt className="inline">Account Holder:</dt>
-                    <dd className="inline" />
-                  </div>
-                  <div>
-                    <dt className="inline">Account Number:</dt>
-                    <dd className="inline" />
-                  </div>
-                  <div>
-                    <dt className="inline">Statement Period:</dt>
-                    <dd className="inline"> &ndash;</dd>
-                  </div>
-                  <div>
-                    <dt className="inline">Branch:</dt>
-                    <dd className="inline" />
-                  </div>
-                </dl>
-              </div>
-
-              <div className="mt-9 text-sm">
-                <h3 className="font-bold">Account Summary</h3>
-                <table className="mt-9 w-full table-fixed border-collapse text-left">
-                  <thead>
-                    <tr>
-                      <th className="pr-4 font-normal">Opening Balance</th>
-                      <th className="pr-4 font-normal">Total Credits</th>
-                      <th className="pr-4 font-normal">Total Debits</th>
-                      <th className="font-normal">Closing Balance</th>
-                    </tr>
-                  </thead>
-                  {/* <tbody>
-                    <tr>
-                      <td className="h-8" colSpan={4} />
-                    </tr>
-                  </tbody> */}
-                </table>
-              </div>
-
-              <div className="mt-10 border-t border-black pt-9">
-                <h3 className="text-sm font-bold">Transaction Details</h3>
-
-                <div className="mt-5 overflow-x-auto">
-                  <table className="w-full min-w-[760px] table-fixed border-collapse text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-black">
-                        <th className="w-[13%] pb-3 font-normal">Date</th>
-                        <th className="w-[22%] pb-3 font-normal">
-                          Description
-                        </th>
-                        <th className="w-[18%] pb-3 font-normal">
-                          Reference ID
-                        </th>
-                        <th className="w-[15%] pb-3 font-normal">Debit(+)</th>
-                        <th className="w-[16%] pb-3 font-normal">Credit(-)</th>
-                        <th className="w-[16%] pb-3 font-normal">Balance</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="h-10 pt-3" colSpan={6} />
-                      </tr>
-                    </tbody>
-                  </table>
+          {/* Statement Preview */}
+          <div className="es-statement animate-fade-in-delay-1">
+            <div className="es-statement-inner">
+              {/* Bank Logo & Info */}
+              <div className="es-bank-header">
+                <img
+                  src="/loginlogo.png"
+                  alt="Nova Bank"
+                  className="es-bank-logo"
+                />
+                <div>
+                  <h2 className="es-bank-name">Nova Bank</h2>
+                  <p className="es-bank-sub">Bank Statement</p>
                 </div>
               </div>
+
+              {mockStatement ? (
+                <>
+                  {/* Account Details */}
+                  <div className="es-details">
+                    <div className="es-detail-row">
+                      <span className="es-detail-label">Account Holder:</span>
+                      <span className="es-detail-value">
+                        {mockStatement.holder}
+                      </span>
+                    </div>
+                    <div className="es-detail-row">
+                      <span className="es-detail-label">Account Number:</span>
+                      <span className="es-detail-value">
+                        {mockStatement.account}
+                      </span>
+                    </div>
+                    <div className="es-detail-row">
+                      <span className="es-detail-label">Statement Period:</span>
+                      <span className="es-detail-value">
+                        {mockStatement.period}
+                      </span>
+                    </div>
+                    <div className="es-detail-row">
+                      <span className="es-detail-label">Branch:</span>
+                      <span className="es-detail-value">
+                        {mockStatement.branch}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Summary */}
+                  <div className="es-summary">
+                    <h3 className="es-section-heading">Account Summary</h3>
+                    <div className="es-summary-grid">
+                      <div className="es-summary-item">
+                        <span className="es-summary-label">
+                          Opening Balance
+                        </span>
+                        <span className="es-summary-value">
+                          Rs. {mockStatement.opening}
+                        </span>
+                      </div>
+                      <div className="es-summary-item">
+                        <span className="es-summary-label">Total Credits</span>
+                        <span className="es-summary-value credit">
+                          +Rs. {mockStatement.credits}
+                        </span>
+                      </div>
+                      <div className="es-summary-item">
+                        <span className="es-summary-label">Total Debits</span>
+                        <span className="es-summary-value debit">
+                          -Rs. {mockStatement.debits}
+                        </span>
+                      </div>
+                      <div className="es-summary-item">
+                        <span className="es-summary-label">
+                          Closing Balance
+                        </span>
+                        <span className="es-summary-value">
+                          Rs. {mockStatement.closing}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Transactions Table */}
+                  <div className="es-transactions">
+                    <h3 className="es-section-heading">Transaction Details</h3>
+                    <div className="es-table-wrapper">
+                      <table className="es-table">
+                        <thead>
+                          <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Reference</th>
+                            <th>Debit (-)</th>
+                            <th>Credit (+)</th>
+                            <th>Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {mockStatement.transactions.map((t, i) => (
+                            <tr key={i}>
+                              <td>{t.date}</td>
+                              <td>{t.desc}</td>
+                              <td className="es-ref">{t.ref}</td>
+                              <td className="debit">
+                                {t.debit ? `Rs. ${t.debit}` : '—'}
+                              </td>
+                              <td className="credit">
+                                {t.credit ? `Rs. ${t.credit}` : '—'}
+                              </td>
+                              <td>Rs. {t.balance}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="es-empty">
+                  <p>Enter an account number above to view the statement</p>
+                </div>
+              )}
             </div>
-          </section>
-        </main>
-      </div>
+          </div>
+        </div>
+      </main>
+
+      <style jsx>{`
+        .es-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem 2rem;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+        .es-title {
+          font-size: 1.75rem;
+          font-weight: 800;
+          color: var(--text-primary);
+        }
+        .es-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+        .es-icon-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          border: none;
+          background: var(--bg-card);
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: var(--shadow-sm);
+          transition: all 200ms;
+        }
+        .es-icon-btn:hover { box-shadow: var(--shadow-md); }
+        .es-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          object-fit: cover;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .es-body {
+          padding: 0 2rem 2rem;
+        }
+        .es-input-card {
+          padding: 1.5rem 2rem;
+          margin-bottom: 1.5rem;
+        }
+        .es-input-form {
+          display: flex;
+          align-items: center;
+          gap: 1.5rem;
+          flex-wrap: wrap;
+        }
+        .es-input-label {
+          font-weight: 600;
+          color: var(--text-primary);
+          white-space: nowrap;
+        }
+        .es-account-input {
+          max-width: 300px;
+        }
+
+        /* Statement */
+        .es-statement {
+          background: var(--ivory-50);
+          border-radius: var(--radius-xl);
+          border: 1px solid var(--ivory-200);
+          overflow: hidden;
+        }
+        .es-statement-inner {
+          padding: 2rem;
+        }
+        .es-bank-header {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          margin-bottom: 2rem;
+          padding-bottom: 1.5rem;
+          border-bottom: 2px solid var(--ivory-200);
+        }
+        .es-bank-logo {
+          width: 56px;
+          height: 56px;
+          border-radius: 14px;
+          object-fit: cover;
+        }
+        .es-bank-name {
+          font-size: 1.1rem;
+          font-weight: 800;
+          color: var(--text-primary);
+        }
+        .es-bank-sub {
+          font-size: 0.8rem;
+          color: var(--text-muted);
+        }
+
+        .es-details {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0.75rem;
+          margin-bottom: 2rem;
+        }
+        .es-detail-row {
+          display: flex;
+          flex-direction: column;
+        }
+        .es-detail-label {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+          font-weight: 500;
+        }
+        .es-detail-value {
+          font-size: 0.9rem;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .es-section-heading {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 1rem;
+        }
+
+        .es-summary {
+          margin-bottom: 2rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid var(--ivory-200);
+        }
+        .es-summary-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 1rem;
+        }
+        .es-summary-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+        .es-summary-label {
+          font-size: 0.75rem;
+          color: var(--text-muted);
+        }
+        .es-summary-value {
+          font-size: 0.95rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          font-variant-numeric: tabular-nums;
+        }
+        .es-summary-value.credit { color: var(--success); }
+        .es-summary-value.debit { color: var(--error); }
+
+        .es-transactions {
+          padding-top: 1.5rem;
+          border-top: 1px solid var(--ivory-200);
+        }
+        .es-table-wrapper {
+          overflow-x: auto;
+        }
+        .es-table {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.85rem;
+        }
+        .es-table th {
+          text-align: left;
+          padding: 0.75rem 0.5rem;
+          font-weight: 600;
+          color: var(--text-secondary);
+          border-bottom: 2px solid var(--ivory-300);
+          white-space: nowrap;
+        }
+        .es-table td {
+          padding: 0.75rem 0.5rem;
+          color: var(--text-primary);
+          border-bottom: 1px solid var(--ivory-200);
+          font-variant-numeric: tabular-nums;
+        }
+        .es-table .debit { color: var(--error); }
+        .es-table .credit { color: var(--success); }
+        .es-ref { font-family: var(--font-mono, monospace); font-size: 0.8rem; color: var(--text-muted); }
+
+        .es-empty {
+          min-height: 300px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-muted);
+          font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+          .es-body { padding: 0 1rem 1rem; }
+          .es-details { grid-template-columns: 1fr; }
+          .es-summary-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+      `}</style>
     </div>
   )
 }

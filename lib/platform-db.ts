@@ -1,3 +1,4 @@
+import { createHmac } from 'node:crypto'
 import { Pool } from 'pg'
 
 const connectionString =
@@ -51,12 +52,16 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 `
 
+// NOTE: bcryptjs hashed passwords — original plaintext passwords for dev reference:
+//   dilara  -> password123
+//   kasun   -> kasun
+//   admin   -> admin
 const seed = `
 INSERT INTO users (id, username, password, role, full_name, nic, email) VALUES
-  (1, 'dilara', 'password123', 'customer', 'Dilara Perera', '200112345678', 'dilara@example.test'),
-  (2, 'kasun', 'kasun', 'customer', 'Kasun Wickramanayake', '199812345678', 'kasun@example.test'),
-  (3, 'admin', 'admin', 'admin', 'Platform Administrator', '000000000000', 'root@example.test')
-ON CONFLICT (id) DO NOTHING;
+  (1, 'dilara', '$2b$10$jGB6/XSbJaRdq771.GyxYOt78EE7x/jQVssu1tkfggdw4jkEshzIe', 'customer', 'Dilara Perera', '200112345678', 'dilara@example.test'),
+  (2, 'kasun', '$2b$10$ey6MLmamr8Xib8LIrDDxZObFuMraAB1gApqOp1yJal13LjNlLXyVu', 'customer', 'Kasun Wickramanayake', '199812345678', 'kasun@example.test'),
+  (3, 'admin', '$2b$10$3B4r3n2.ixNskPegP2e9tOaZrgnVsRlPe.ot.beEQpxFBJk53rDZS', 'admin', 'Platform Administrator', '000000000000', 'root@example.test')
+ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password;
 
 INSERT INTO accounts (user_id, account_number, account_name, balance, pin) VALUES
   (1, '1000003423', 'Dilara Savings', 100000.00, '1234'),
@@ -72,12 +77,6 @@ INSERT INTO transactions (from_account, to_account, amount, description, created
 ON CONFLICT DO NOTHING;
 `
 
-export async function runStatement(sql: string) {
-  await ensureDatabase()
-  console.log('[bank-sql]', sql)
-  return pool.query(sql)
-}
-
 export async function ensureDatabase() {
   if (booted) return
   await pool.query(schema)
@@ -85,28 +84,84 @@ export async function ensureDatabase() {
   booted = true
 }
 
+/**
+ * Safe parameterized query — always use $1, $2 placeholders.
+ * Never interpolate user input into SQL strings.
+ */
+export async function query(sql: string, params: unknown[] = []) {
+  await ensureDatabase()
+  return pool.query(sql, params)
+}
+
 export function asText(value: unknown) {
   if (value === undefined || value === null) return ''
   return String(value)
 }
 
+/**
+ * Safe error response — never leaks stack traces, DB URLs, or internal details.
+ */
 export function serviceFailure(reason: unknown) {
-  const issue = reason as {
-    message?: string
-    code?: string
-    detail?: string
-    stack?: string
-  }
+  const issue = reason as { message?: string; code?: string }
+  console.error('[bank-error]', issue.message || reason)
 
   return Response.json(
     {
       ok: false,
-      message: issue.message,
-      code: issue.code,
-      detail: issue.detail,
-      trace: issue.stack,
-      databaseUrl: connectionString
+      message: 'An internal error occurred. Please try again later.',
+      code: issue.code || 'INTERNAL_ERROR'
     },
     { status: 500 }
   )
+}
+
+// ─── Auth helpers ───────────────────────────────────────────────────────
+
+const SESSION_SECRET =
+  process.env.SESSION_SECRET || 'dev-secret-change-in-production'
+
+/**
+ * Create a signed session token: userId:role:signature
+ */
+export function createSessionToken(userId: number, role: string): string {
+  const payload = `${userId}:${role}`
+  const sig = createHmac('sha256', SESSION_SECRET)
+    .update(payload)
+    .digest('hex')
+    .slice(0, 16)
+  return `${payload}:${sig}`
+}
+
+/**
+ * Verify and parse a session token. Returns null if invalid/tampered.
+ */
+export function verifySessionToken(
+  token: string
+): { userId: number; role: string } | null {
+  if (!token) return null
+  const parts = token.split(':')
+  if (parts.length !== 3) return null
+  const [userIdStr, role, sig] = parts
+  const userId = parseInt(userIdStr, 10)
+  if (isNaN(userId)) return null
+
+  const expectedSig = createHmac('sha256', SESSION_SECRET)
+    .update(`${userId}:${role}`)
+    .digest('hex')
+    .slice(0, 16)
+
+  if (sig !== expectedSig) return null
+  return { userId, role }
+}
+
+/**
+ * Extract session from request cookies. Returns null if not authenticated.
+ */
+export function getSession(
+  request: Request
+): { userId: number; role: string } | null {
+  const cookieHeader = request.headers.get('cookie') || ''
+  const match = cookieHeader.match(/session=([^;]+)/)
+  if (!match) return null
+  return verifySessionToken(decodeURIComponent(match[1]))
 }
