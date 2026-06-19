@@ -1,9 +1,51 @@
+'use client'
+
+import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import AuthButton from '@/components/authButton'
 
 export default function LoginPage() {
+  const router = useRouter()
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault()
+    setError('')
+
+    if (!username.trim() || !password) {
+      setError('Please enter both username and password.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: username.trim(), password })
+      })
+
+      const data = await res.json()
+
+      if (!data.ok) {
+        setError(data.message || 'Login failed.')
+        return
+      }
+
+      router.push('/dashboard')
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <section className="mx-auto flex min-h-[480px] w-full max-w-[1060px] overflow-hidden rounded-[56px] bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] lg:min-h-[660px]">
+    <section className="mx-auto flex min-h-[480px] w-full max-w-[1060px] overflow-hidden rounded-[40px] bg-white shadow-[0_24px_48px_rgba(29,7,48,0.12)] lg:min-h-[660px]">
       <aside
         aria-label="Nova Bank shell artwork"
         className="relative hidden w-[46.2%] shrink-0 overflow-hidden bg-[#1d0730] md:block"
@@ -14,7 +56,6 @@ export default function LoginPage() {
           className="size-full object-cover"
           aria-hidden="true"
         />
-
         <div className="absolute inset-0 flex items-center justify-center">
           <img
             src="/loginlogo.png"
@@ -26,25 +67,37 @@ export default function LoginPage() {
 
       <div className="flex flex-1 items-center justify-center bg-white px-8 py-10">
         <div className="w-full max-w-[450px] text-center">
-          <h1 className="mb-11 text-[2.45rem] font-bold text-black text-balance">
-            LOGIN
+          <h1 className="mb-2 text-[2.2rem] font-bold text-[#1d0730]">
+            Welcome Back
           </h1>
+          <p className="mb-10 text-sm text-[#8a8a9a]">
+            Sign in to your Nova Bank account
+          </p>
 
-          <div className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && (
+              <div className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 border border-red-100">
+                {error}
+              </div>
+            )}
+
             <div className="relative">
               <label className="sr-only" htmlFor="login-account">
-                Account name
+                Username
               </label>
               <img
                 src="/person.png"
                 alt=""
                 aria-hidden="true"
-                className="-translate-y-1/2 absolute left-8 top-1/2 size-6"
+                className="-translate-y-1/2 absolute left-5 top-1/2 size-5 opacity-40"
               />
               <input
                 id="login-account"
-                placeholder="Account name"
-                className="h-[64px] w-full rounded-[40px] border-0 bg-[#d9d9d9] px-8 pl-20 text-lg text-black shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] outline-none transition-shadow placeholder:text-black/45 focus:shadow-[0_4px_4px_0_rgba(0,0,0,0.30),0_8px_12px_6px_rgba(0,0,0,0.15)]"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Username"
+                autoComplete="username"
+                className="h-[56px] w-full rounded-[16px] border-0 bg-[#f8f6f2] px-6 pl-14 text-base text-[#1a1a2e] outline-none transition-all placeholder:text-[#8a8a9a] focus:shadow-[0_0_0_3px_rgba(154,92,151,0.15)] focus:bg-white"
               />
             </div>
 
@@ -56,34 +109,44 @@ export default function LoginPage() {
                 src="/password.png"
                 alt=""
                 aria-hidden="true"
-                className="-translate-y-1/2 absolute left-8 top-1/2 size-6"
+                className="-translate-y-1/2 absolute left-5 top-1/2 size-5 opacity-40"
               />
               <input
                 id="login-password"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
-                className="h-[64px] w-full rounded-[40px] border-0 bg-[#d9d9d9] px-8 pl-20 text-lg text-black shadow-[0_1px_3px_0_rgba(0,0,0,0.30),0_4px_8px_3px_rgba(0,0,0,0.15)] outline-none transition-shadow placeholder:text-black/45 focus:shadow-[0_4px_4px_0_rgba(0,0,0,0.30),0_8px_12px_6px_rgba(0,0,0,0.15)]"
+                autoComplete="current-password"
+                className="h-[56px] w-full rounded-[16px] border-0 bg-[#f8f6f2] px-6 pl-14 text-base text-[#1a1a2e] outline-none transition-all placeholder:text-[#8a8a9a] focus:shadow-[0_0_0_3px_rgba(154,92,151,0.15)] focus:bg-white"
               />
             </div>
-          </div>
 
-          <div className="mt-3 text-right">
+            <div className="text-right">
+              <Link
+                href="/reset-password"
+                className="text-sm font-medium text-[#7a2d78] hover:text-[#450043] transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            <div className="pt-2">
+              <AuthButton loading={loading} className="mx-auto">
+                SIGN IN
+              </AuthButton>
+            </div>
+          </form>
+
+          <p className="mt-8 text-sm text-[#8a8a9a]">
+            Don&apos;t have an account?{' '}
             <Link
-              href="/reset-password"
-              className="text-sm font-bold text-black"
+              href="/sign-up"
+              className="font-bold text-[#1d0730] hover:text-[#7a2d78] transition-colors"
             >
-              Forgot password?
+              Sign Up
             </Link>
-          </div>
-
-          <AuthButton className="mt-8">SIGN IN</AuthButton>
-
-          <p className="mt-6 text-sm font-bold text-black">
-            Don`t have an account?
           </p>
-          <Link href="/sign-up" className="text-2xl font-bold text-black">
-            SIGN UP
-          </Link>
         </div>
       </div>
     </section>

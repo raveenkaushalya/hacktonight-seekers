@@ -1,149 +1,437 @@
 @import "tailwindcss";
 
+/* ─── Design System: Nova Bank ─────────────────────────────────────── */
+/* Signature plum + ivory + citrine palette                             */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary: Deep Aubergine/Plum */
+  --plum-900: #1d0730;
+  --plum-800: #2e0a46;
+  --plum-700: #450043;
+  --plum-600: #5a0058;
+  --plum-500: #7a2d78;
+  --plum-400: #9a5c97;
+  --plum-300: #b886b6;
+  --plum-200: #d8b9d6;
+  --plum-100: #f0e4ef;
+  --plum-50: #faf5fa;
+
+  /* Accent: Citrine/Lime */
+  --citrine-500: #a7d93a;
+  --citrine-400: #bde65e;
+  --citrine-300: #d4f08a;
+  --citrine-200: #eafabd;
+
+  /* Neutral: Warm Ivory */
+  --ivory-50: #fefdfb;
+  --ivory-100: #f8f6f2;
+  --ivory-200: #efece6;
+  --ivory-300: #e2ddd5;
+  --ivory-400: #c9c3b8;
+  --ivory-500: #9e9788;
+
+  /* Semantic */
+  --success: #22c55e;
+  --success-bg: #dcfce7;
+  --error: #ef4444;
+  --error-bg: #fee2e2;
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+
+  /* Surface */
+  --bg-body: var(--ivory-100);
+  --bg-card: #ffffff;
+  --bg-sidebar: var(--plum-900);
+  --bg-input: var(--ivory-200);
+
+  /* Text */
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a4a5a;
+  --text-muted: #8a8a9a;
+  --text-inverse: #ffffff;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(29, 7, 48, 0.06);
+  --shadow-md: 0 4px 12px rgba(29, 7, 48, 0.08);
+  --shadow-lg: 0 12px 32px rgba(29, 7, 48, 0.12);
+  --shadow-xl: 0 24px 48px rgba(29, 7, 48, 0.16);
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 9999px;
+
+  /* Transitions */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration: 200ms;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg-body);
+  --color-foreground: var(--text-primary);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Base ────────────────────────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-bai, 'Bai Jamjuree'), Arial, Helvetica, sans-serif;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  font-family: var(--font-bai, 'Bai Jamjuree'), 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-:root{
-  --sidebar-purple: rgba(58,6,59,0.83); /* #3A063B at 83% */
-  --sidebar-accent: #b886b6;
-  --card-bg: #ffffff;
-  --bg-light: #f3f2f2;
+/* ─── Scrollbar ───────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--plum-200);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--plum-300);
 }
 
-.font-geist{font-family: var(--font-bai, 'Bai Jamjuree'), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial}
+/* ─── Utility Classes ─────────────────────────────────────────────── */
 
-.bg-bg-light{background-color:var(--bg-light)}
-.bg-sidebar-purple{background:var(--sidebar-purple);border-radius:12px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.12)}
-.text-sidebar-purple{color:var(--sidebar-purple)}
+.font-geist {
+  font-family: var(--font-bai, 'Bai Jamjuree'), system-ui, sans-serif;
+}
 
-.transfer-card{
-  background: var(--card-bg);
-  border-radius: 18px;
-  box-shadow: 0 22px 50px rgba(0,0,0,0.12);
+.bg-bg-light {
+  background-color: var(--bg-body);
+}
+
+/* ─── Card Styles ─────────────────────────────────────────────────── */
+
+.nova-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: box-shadow var(--duration) var(--ease-out),
+              transform var(--duration) var(--ease-out);
+}
+
+.nova-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* ─── Button Styles ───────────────────────────────────────────────── */
+
+.nova-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease-out);
+  text-decoration: none;
+}
+
+.nova-btn-primary {
+  background: linear-gradient(135deg, var(--plum-500), var(--plum-700));
+  color: var(--text-inverse);
+  box-shadow: 0 4px 14px rgba(69, 0, 67, 0.3);
+}
+
+.nova-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(69, 0, 67, 0.4);
+}
+
+.nova-btn-primary:active {
+  transform: translateY(0);
+}
+
+.nova-btn-secondary {
+  background: var(--ivory-200);
+  color: var(--text-primary);
+}
+
+.nova-btn-secondary:hover {
+  background: var(--ivory-300);
+}
+
+.nova-btn-success {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: var(--text-inverse);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+}
+
+.nova-btn-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+}
+
+/* ─── Input Styles ────────────────────────────────────────────────── */
+
+.nova-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  background: var(--bg-input);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  outline: none;
+  transition: all var(--duration) var(--ease-out);
+}
+
+.nova-input:focus {
+  border-color: var(--plum-400);
+  box-shadow: 0 0 0 3px rgba(154, 92, 151, 0.15);
+  background: #fff;
+}
+
+.nova-input::placeholder {
+  color: var(--text-muted);
+}
+
+.nova-input-error {
+  border-color: var(--error) !important;
+  background: var(--error-bg);
+}
+
+.nova-label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.375rem;
+}
+
+/* ─── Transfer Card (kept for bank-transfer page) ─────────────────── */
+
+.transfer-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
   max-width: 960px;
-  margin: 18px auto;
-  padding: 140px 48px 40px;
+  margin: 1rem auto;
+  padding: 2.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.underline-input {
+  width: 100%;
+  border: 0;
+  border-bottom: 2px solid var(--ivory-300);
+  padding: 0.6rem 0.25rem;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: transparent;
+  transition: border-color var(--duration) var(--ease-out);
+}
+
+.underline-input:focus {
+  border-bottom-color: var(--plum-400);
+}
+
+.description-box {
+  width: 100%;
+  border: 1.5px solid var(--ivory-300);
+  padding: 0.6rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  background: transparent;
+  outline: none;
+  transition: border-color var(--duration) var(--ease-out);
+}
+
+.description-box:focus {
+  border-color: var(--plum-400);
+}
+
+.next-btn {
+  background: linear-gradient(135deg, var(--plum-500), var(--plum-700));
+  color: var(--text-inverse);
+  padding: 0.875rem 2.5rem;
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 6px 18px rgba(69, 0, 67, 0.25);
+  cursor: pointer;
+  transition: all var(--duration) var(--ease-out);
+}
+
+.next-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(69, 0, 67, 0.35);
+}
+
+.transfer-btn {
+  max-width: 420px;
+  width: 100%;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--plum-400), var(--plum-600));
+  color: var(--text-inverse);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 1px;
+  box-shadow: 0 8px 24px rgba(69, 0, 67, 0.25);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem auto 0;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease-out);
+}
+
+.transfer-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(69, 0, 67, 0.35);
+}
+
+.success-btn {
+  max-width: 420px;
+  width: 100%;
+  height: 52px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--plum-400), var(--plum-600));
+  color: var(--text-inverse);
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(69, 0, 67, 0.22);
+  border: none;
+  margin-top: 1.5rem;
+  cursor: pointer;
+  transition: all var(--duration) var(--ease-out);
+}
+
+.success-btn:hover {
+  transform: translateY(-1px);
+}
+
+.success-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem auto 2rem;
+  width: 100px;
+  height: 100px;
+}
+
+.success-check svg {
+  display: block;
+  margin: 0 auto;
+  width: 100%;
+  height: 100%;
+}
+
+.success-check.inside-check {
   position: relative;
-  max-height: none;
-  overflow: visible;
-  border: 1px solid rgba(0,0,0,0.04);
+  top: 0;
+  left: 0;
+  transform: none;
+  margin: 1rem auto 2rem;
+  width: 100px;
+  height: 100px;
+  display: block;
 }
 
-.underline-input{
-  width:100%;
-  border:0;
-  border-bottom:2px solid #cfcfcf;
-  padding:8px 4px;
-  outline:none;
-  font-size:16px;
-}
-.underline-input:focus{border-bottom-color:var(--sidebar-accent)}
+/* ─── Topbar Icons ────────────────────────────────────────────────── */
 
-.description-box{
-  width:100%;
-  border:1px solid #cfcfcf;
-  padding:8px;
-  border-radius:2px;
-}
-
-.next-btn{
-  background:var(--sidebar-accent);
-  color:white;
-  padding:18px 48px;
-  border-radius:28px;
-  font-weight:700;
-  box-shadow: 0 8px 18px rgba(90,39,64,0.2);
-  border:none;
+.topbar-icon {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background var(--duration) var(--ease-out);
 }
 
-.sidebar-item{padding:14px 18px;border-radius:12px;color:rgba(255,255,255,0.95);transition:all 200ms cubic-bezier(.2,.9,.2,1);display:flex;align-items:center;gap:14px;text-transform:uppercase;font-weight:600;letter-spacing:1px}
-.sidebar-item:hover{background:rgba(255,255,255,0.03);transform:translateY(-3px)}
-.sidebar-item .sidebar-icon{width:44px;height:44px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:transparent}
-.sidebar-item.active{background: linear-gradient(180deg, rgba(196,150,185,0.95), rgba(169,111,150,0.95));font-weight:900;color:#ffffff;box-shadow: 0 20px 40px rgba(58,6,59,0.35), inset 0 -6px 0 rgba(255,255,255,0.06);transform:translateY(-6px);padding-left:20px;padding-right:28px}
-.sidebar-item.active .sidebar-icon{background:rgba(255,255,255,0.06);box-shadow:0 10px 20px rgba(0,0,0,0.18);border-radius:12px}
-.sidebar-item.active svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.6}
-.icon-btn{background:rgba(255,255,255,0.04);border:none;color:white;font-size:18px;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%}
-.icon-btn svg{width:20px;height:20px;display:block;fill:currentColor;stroke:currentColor}
-
-/* Ensure form labels and inputs inside the transfer card are dark/visible */
-.transfer-card label,
-.transfer-card input,
-.transfer-card select,
-.transfer-card textarea,
-.underline-input,
-.description-box{color:#000}
-
-/* Ensure all text inside transfer/confirm cards is black and highly visible */
-.transfer-card,
-.transfer-card * {
-  color: #000 !important;
+.topbar-icon:hover {
+  background: var(--ivory-200);
 }
 
-/* Ensure transfer buttons remain white even when global card text is forced black */
-.transfer-card .next-btn,
-.transfer-card .transfer-btn {
-  color: #fff !important;
-  text-shadow: 0 2px 0 rgba(0,0,0,0.12);
+.topbar-icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
+/* ─── Page Layout ─────────────────────────────────────────────────── */
 
-/* Allow confirm illustration and inner panel to fully display */
-.transfer-card img{max-width:420px;max-height:340px;width:auto;height:auto}
+.page-shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-body);
+}
 
-/* inner confirm panel styling (rounded, elevated) */
-.transfer-card .bg-white{background:#f3f5f6;border-radius:14px;box-shadow:0 20px 40px rgba(12,12,12,0.06);max-width:760px;margin:0 auto;padding:32px}
+.page-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
 
-.transfer-card h3{font-size:26px;font-weight:900;text-align:center;margin-bottom:18px}
+/* ─── Animations ──────────────────────────────────────────────────── */
 
-/* ensure headings below the overlapping graphic are visible */
-.transfer-card > .relative > h3{margin-top:6px}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
-/* transfer button variant styled as large pill overlapping panel */
-.transfer-btn{width:420px;height:72px;border-radius:36px;background:linear-gradient(180deg,#b886b6,#9b5f90);color:#fff;font-weight:900;font-size:20px;letter-spacing:2px;box-shadow:0 22px 28px rgba(90,39,64,0.25);border:none;margin-top:24px;display:block;margin-left:auto;margin-right:auto}
-.transfer-btn:active{transform:translateY(1px)}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(154, 92, 151, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(154, 92, 151, 0); }
+}
 
-/* slightly adjust generic next button */
-.next-btn{padding:14px 40px}
+.animate-fade-in {
+  animation: fadeInUp 0.4s var(--ease-out) both;
+}
 
-/* Make main headings clearly visible */
-main h2{color:#000;font-size:28px;font-weight:800}
+.animate-fade-in-delay-1 {
+  animation: fadeInUp 0.4s var(--ease-out) 0.1s both;
+}
 
-/* success page specifics */
-.success-check{display:flex;align-items:center;justify-content:center;position:absolute;top:-120px;left:50%;transform:translateX(-50%);z-index:40;width:220px;height:220px}
-.success-check svg{display:block;margin:0 auto;width:100%;height:100%}
-.success-btn{width:420px;background:linear-gradient(180deg,#b886b6,#9b5f90);height:64px;border-radius:32px;color:#fff;font-weight:800;font-size:18px;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 18px 28px rgba(90,39,64,0.22);border:none;margin-top:28px}
-.success-btn span{font-size:22px;margin-right:12px}
+.animate-fade-in-delay-2 {
+  animation: fadeInUp 0.4s var(--ease-out) 0.2s both;
+}
 
-/* Variant: place the alert/check inside the card flow (no overlap) */
-.success-check.inside-check{position:relative;top:0;left:0;transform:none;margin:20px auto 40px;width:100px;height:100px;z-index:10;display:block}
-.success-check.inside-check svg{width:100%;height:100%}
+.animate-fade-in-delay-3 {
+  animation: fadeInUp 0.4s var(--ease-out) 0.3s both;
+}
 
-/* Topbar icons (right side) */
-.topbar-icon{background:transparent;border:none;color:var(--foreground);display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px}
-.topbar-icon svg{width:22px;height:22px;fill:none;stroke:currentColor}
-.topbar-icon:hover{background:rgba(0,0,0,0.04)}
+/* ─── Responsive ──────────────────────────────────────────────────── */
 
-/* Ensure PNG icons inside topbar buttons are sized and centered */
-.topbar-icon img{width:20px;height:20px;object-fit:contain;display:block}
+@media (max-width: 768px) {
+  .page-shell {
+    flex-direction: column;
+  }
+}

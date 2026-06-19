@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import Sidebar from '@/components/sidebar'
+import { Search, Bell } from '@/components/Icons'
 
 type Errors = Partial<{
   amount: string
@@ -11,7 +11,7 @@ type Errors = Partial<{
   bank: string
 }>
 
-export default function Home() {
+export default function BankTransferPage() {
   const [amount, setAmount] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
   const [accountName, setAccountName] = useState('')
@@ -44,165 +44,182 @@ export default function Home() {
   function handleNext(e: React.FormEvent) {
     e.preventDefault()
     if (validate()) {
-      // show confirmation step first
       setStep('confirm')
     }
   }
 
-  function handleTransfer(e: React.FormEvent) {
+  async function handleTransfer(e: React.FormEvent) {
     e.preventDefault()
-    // simulate transfer completion and show success page
+    // In production, this would call POST /api/transfer
     const conf = String(Math.floor(10000000 + Math.random() * 89999999))
     setConfirmation(conf)
-    setStep('success' as any)
+    setStep('success')
+  }
+
+  function resetForm() {
+    setAmount('')
+    setAccountNumber('')
+    setAccountName('')
+    setBank('')
+    setDescription('')
+    setErrors({})
+    setConfirmation(null)
+    setStep('form')
   }
 
   return (
-    <div className="min-h-screen bg-bg-light font-geist p-0">
-      <div className="flex min-h-screen">
-        <Sidebar />
+    <div className="page-shell">
+      <Sidebar />
 
-        <main className="flex-1 p-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold">Bank Transfer</h2>
-            <div className="flex items-center gap-3">
-              <button className="topbar-icon" aria-label="search">
-                <img src="/search.png" alt="search" />
-              </button>
-              <button className="topbar-icon" aria-label="notifications">
-                <img src="/notification.png" alt="notifications" />
-              </button>
-              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
-                <img
-                  src="/avatar.png"
-                  alt="avatar"
-                  className="w-full h-full object-cover bg-white"
-                />
-              </div>
-            </div>
+      <main className="page-content">
+        {/* Header */}
+        <header className="transfer-header">
+          <h1 className="transfer-title">Bank Transfer</h1>
+          <div className="transfer-header-actions">
+            <button className="dash-icon-btn" aria-label="Search">
+              <Search size={20} />
+            </button>
+            <button className="dash-icon-btn" aria-label="Notifications">
+              <Bell size={20} />
+            </button>
+            <img
+              src="/person-logo.png"
+              alt="Profile"
+              className="header-avatar"
+            />
           </div>
+        </header>
+
+        <div className="transfer-container">
           {step === 'form' ? (
-            <form onSubmit={handleNext} className="transfer-card p-8">
-              <div className="grid grid-cols-12 gap-y-6 gap-x-8 items-center">
-                <label className="col-span-3 text-gray-700">Amount :</label>
-                <div className="col-span-9">
+            <form
+              onSubmit={handleNext}
+              className="transfer-card animate-fade-in"
+            >
+              <h2 className="form-heading">Transfer Details</h2>
+              <div className="form-grid">
+                <label className="form-label">Amount</label>
+                <div className="form-field">
                   <input
                     aria-label="amount"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     className="underline-input"
-                    placeholder=""
+                    placeholder="0.00"
+                    type="number"
+                    step="0.01"
                   />
                   {errors.amount && (
-                    <div className="text-sm text-red-600 mt-1">
-                      {errors.amount}
-                    </div>
+                    <div className="field-error">{errors.amount}</div>
                   )}
                 </div>
 
-                <label className="col-span-3 text-gray-700">
-                  Account Number :
-                </label>
-                <div className="col-span-9">
+                <label className="form-label">Account Number</label>
+                <div className="form-field">
                   <input
                     value={accountNumber}
                     onChange={(e) => setAccountNumber(e.target.value)}
                     className="underline-input"
+                    placeholder="Enter recipient account"
                   />
                   {errors.accountNumber && (
-                    <div className="text-sm text-red-600 mt-1">
-                      {errors.accountNumber}
-                    </div>
+                    <div className="field-error">{errors.accountNumber}</div>
                   )}
                 </div>
 
-                <label className="col-span-3 text-gray-700">
-                  Account Name :
-                </label>
-                <div className="col-span-9">
+                <label className="form-label">Account Name</label>
+                <div className="form-field">
                   <input
                     value={accountName}
                     onChange={(e) => setAccountName(e.target.value)}
                     className="underline-input"
+                    placeholder="Recipient name"
                   />
                   {errors.accountName && (
-                    <div className="text-sm text-red-600 mt-1">
-                      {errors.accountName}
-                    </div>
+                    <div className="field-error">{errors.accountName}</div>
                   )}
                 </div>
 
-                <label className="col-span-3 text-gray-700">
-                  Select Bank :
-                </label>
-                <div className="col-span-9">
+                <label className="form-label">Select Bank</label>
+                <div className="form-field">
                   <select
                     value={bank}
                     onChange={(e) => setBank(e.target.value)}
-                    className="underline-input bg-transparent"
+                    className="underline-input"
                   >
                     <option value="">Choose bank</option>
                     <option>First National</option>
                     <option>Global Trust</option>
                     <option>Union Bank</option>
+                    <option>Nova Bank</option>
                   </select>
                   {errors.bank && (
-                    <div className="text-sm text-red-600 mt-1">
-                      {errors.bank}
-                    </div>
+                    <div className="field-error">{errors.bank}</div>
                   )}
                 </div>
 
-                <label className="col-span-3 text-gray-700">
-                  Description :
-                </label>
-                <div className="col-span-9">
+                <label className="form-label">Description</label>
+                <div className="form-field">
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    rows={4}
+                    rows={3}
                     className="description-box"
+                    placeholder="Optional note"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-center mt-10">
+              <div className="form-actions">
                 <button type="submit" className="next-btn">
                   NEXT
                 </button>
               </div>
             </form>
           ) : step === 'confirm' ? (
-            <div className="transfer-card p-8">
-              <h3 className="text-center text-2xl font-semibold mb-6">
-                Confirm Transfer
-              </h3>
-              <div className="bg-white rounded-lg p-6 shadow-lg max-w-xl mx-auto text-center">
-                <p className="mb-4">
-                  Confirm your transfer of <strong>Rs. {amount || '0'}</strong>{' '}
-                  to <strong>{accountName || 'recipient'}</strong>
-                </p>
-                <p className="text-sm text-gray-600 mb-6">
-                  Additional fee of Rs.50 will be charged.
-                </p>
-                <div className="mb-6">
-                  <img
-                    src="/transfer-illustration.png"
-                    alt="illustration"
-                    className="mx-auto"
-                  />
+            <div className="transfer-card animate-fade-in">
+              <h2 className="form-heading">Confirm Transfer</h2>
+              <div className="confirm-panel">
+                <div className="confirm-details">
+                  <div className="confirm-row">
+                    <span className="confirm-label">Amount</span>
+                    <span className="confirm-value">Rs. {amount || '0'}</span>
+                  </div>
+                  <div className="confirm-row">
+                    <span className="confirm-label">Recipient</span>
+                    <span className="confirm-value">{accountName || '—'}</span>
+                  </div>
+                  <div className="confirm-row">
+                    <span className="confirm-label">Account</span>
+                    <span className="confirm-value">{accountNumber}</span>
+                  </div>
+                  <div className="confirm-row">
+                    <span className="confirm-label">Bank</span>
+                    <span className="confirm-value">{bank}</span>
+                  </div>
+                  {description && (
+                    <div className="confirm-row">
+                      <span className="confirm-label">Note</span>
+                      <span className="confirm-value">{description}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-center gap-4">
+
+                <p className="confirm-fee">
+                  Additional fee of Rs.50 will be charged
+                </p>
+
+                <div className="confirm-actions">
+                  {/* FIX: BACK goes to 'form', not 'failure' */}
                   <button
-                    onClick={() => setStep('failure')}
-                    className="next-btn"
-                    aria-label="back"
+                    onClick={() => setStep('form')}
+                    className="nova-btn nova-btn-secondary"
                   >
                     BACK
                   </button>
                   <button
                     onClick={handleTransfer}
-                    className="next-btn transfer-btn"
+                    className="nova-btn nova-btn-primary"
                   >
                     TRANSFER
                   </button>
@@ -210,126 +227,256 @@ export default function Home() {
               </div>
             </div>
           ) : step === 'success' ? (
-            // success page
-            <div className="transfer-card p-8">
-              <div className="relative">
-                <div className="success-check inside-check">
+            <div className="transfer-card animate-fade-in">
+              <div className="status-container">
+                <div className="status-icon success">
                   <svg
-                    viewBox="0 0 120 120"
-                    width="100"
-                    height="100"
-                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    height="48"
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <defs>
-                      <radialGradient id="g" cx="50%" cy="50%">
-                        <stop offset="0%" stopColor="#28a745" />
-                        <stop offset="100%" stopColor="#138a3e" />
-                      </radialGradient>
-                    </defs>
-                    <circle cx="60" cy="60" r="50" fill="#dff7e7" />
-                    <circle cx="60" cy="60" r="40" fill="#10a654" />
-                    <path
-                      d="M38 62 L54 78 L82 42"
-                      stroke="#fff"
-                      strokeWidth="8"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      fill="none"
-                    />
+                    <path d="m9 12 2 2 4-4" />
                   </svg>
                 </div>
-
-                <h3 className="text-center text-2xl font-semibold mb-4">
-                  Transfer Successful!
-                </h3>
-                <p className="text-center text-sm text-gray-500 mb-10">
-                  Confirmation number : {confirmation}
-                </p>
-
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => {
-                      // go back to home (reset form)
-                      setAmount('')
-                      setAccountNumber('')
-                      setAccountName('')
-                      setBank('')
-                      setDescription('')
-                      setErrors({})
-                      setConfirmation(null)
-                      setStep('form')
-                    }}
-                    className="transfer-btn success-btn"
-                  >
-                    <span className="mr-3">‹</span> BACK TO HOME
-                  </button>
-                </div>
+                <h3 className="status-title">Transfer Successful!</h3>
+                <p className="status-subtitle">Confirmation: {confirmation}</p>
+                <button
+                  onClick={resetForm}
+                  className="nova-btn nova-btn-primary"
+                >
+                  ← BACK TO HOME
+                </button>
               </div>
             </div>
           ) : (
-            // failure page
-            <div className="transfer-card p-8">
-              <div className="relative">
-                <div className="success-check inside-check">
+            <div className="transfer-card animate-fade-in">
+              <div className="status-container">
+                <div className="status-icon failed">
                   <svg
-                    viewBox="0 0 120 120"
-                    width="220"
-                    height="220"
-                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    width="48"
+                    height="48"
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <circle cx="60" cy="60" r="50" fill="#ffdede" />
-                    <circle cx="60" cy="60" r="40" fill="#ffb6b6" />
-                    <path
-                      d="M60 30 L93 86 L27 86 Z"
-                      fill="#ff4d4f"
-                      stroke="#fff"
-                      strokeWidth="4"
-                      strokeLinejoin="round"
-                    />
-                    <text
-                      x="60"
-                      y="78"
-                      textAnchor="middle"
-                      fontSize="36"
-                      fill="#fff"
-                      fontWeight="700"
-                    >
-                      !
-                    </text>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
                 </div>
-
-                <h3 className="text-center text-2xl font-semibold mb-4">
-                  Transaction Failed!
-                </h3>
-                <p className="text-center text-sm text-gray-500 mb-6">
-                  Insufficient Balance
-                  <br />
-                  Current Balance is: Rs.500
+                <h3 className="status-title">Transaction Failed</h3>
+                <p className="status-subtitle">
+                  Insufficient balance or an error occurred.
                 </p>
-
-                <div className="flex justify-center">
-                  <button
-                    onClick={() => {
-                      setAmount('')
-                      setAccountNumber('')
-                      setAccountName('')
-                      setBank('')
-                      setDescription('')
-                      setErrors({})
-                      setConfirmation(null)
-                      setStep('form')
-                    }}
-                    className="transfer-btn success-btn"
-                  >
-                    <span className="mr-3">‹</span> BACK TO HOME
-                  </button>
-                </div>
+                <button
+                  onClick={resetForm}
+                  className="nova-btn nova-btn-primary"
+                >
+                  ← TRY AGAIN
+                </button>
               </div>
             </div>
           )}
-        </main>
-      </div>
+        </div>
+      </main>
+
+      <style jsx>{`
+        .transfer-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 1.5rem 2rem;
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .transfer-title {
+          font-size: 1.75rem;
+          font-weight: 800;
+          color: var(--text-primary);
+        }
+
+        .transfer-header-actions {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .dash-icon-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          border: none;
+          background: var(--bg-card);
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-shadow: var(--shadow-sm);
+          transition: all 200ms;
+        }
+
+        .dash-icon-btn:hover {
+          box-shadow: var(--shadow-md);
+          color: var(--plum-600);
+        }
+
+        .header-avatar {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          object-fit: cover;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .transfer-container {
+          padding: 0 2rem 2rem;
+          max-width: 800px;
+        }
+
+        .form-heading {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 2rem;
+        }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: 140px 1fr;
+          gap: 1.25rem 1.5rem;
+          align-items: start;
+        }
+
+        .form-label {
+          color: var(--text-secondary);
+          font-weight: 500;
+          font-size: 0.9rem;
+          padding-top: 0.6rem;
+        }
+
+        .form-field {
+          min-width: 0;
+        }
+
+        .field-error {
+          font-size: 0.78rem;
+          color: var(--error);
+          margin-top: 0.25rem;
+        }
+
+        .form-actions {
+          display: flex;
+          justify-content: center;
+          margin-top: 2.5rem;
+        }
+
+        /* Confirm */
+        .confirm-panel {
+          max-width: 500px;
+          margin: 0 auto;
+        }
+
+        .confirm-details {
+          background: var(--ivory-100);
+          border-radius: var(--radius-lg);
+          padding: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .confirm-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+        }
+
+        .confirm-label {
+          font-size: 0.85rem;
+          color: var(--text-muted);
+        }
+
+        .confirm-value {
+          font-size: 0.95rem;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .confirm-fee {
+          text-align: center;
+          font-size: 0.8rem;
+          color: var(--text-muted);
+          margin-top: 1rem;
+        }
+
+        .confirm-actions {
+          display: flex;
+          justify-content: center;
+          gap: 1rem;
+          margin-top: 1.5rem;
+        }
+
+        /* Status */
+        .status-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 2rem 0;
+        }
+
+        .status-icon {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 1.5rem;
+        }
+
+        .status-icon.success {
+          background: linear-gradient(135deg, #22c55e, #16a34a);
+          box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3);
+        }
+
+        .status-icon.failed {
+          background: linear-gradient(135deg, #ef4444, #dc2626);
+          box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+        }
+
+        .status-title {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 0.5rem;
+        }
+
+        .status-subtitle {
+          font-size: 0.9rem;
+          color: var(--text-muted);
+          margin-bottom: 2rem;
+        }
+
+        @media (max-width: 640px) {
+          .form-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+          }
+          .transfer-container {
+            padding: 0 1rem 1rem;
+          }
+        }
+      `}</style>
     </div>
   )
 }

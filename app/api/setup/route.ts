@@ -12,7 +12,7 @@ export async function GET() {
 
     return Response.json({
       ok: true,
-      message: 'Database initialized. This endpoint is public on purpose.',
+      message: 'Database initialized.',
       tables: tables.rows
     })
   } catch (reason) {

@@ -1,21 +1,31 @@
-import { asText, runStatement, serviceFailure } from '@/lib/platform-db'
+import { query, serviceFailure, getSession } from '@/lib/platform-db'
 
+/**
+ * GET /api/transactions — get recent transactions for the authenticated user
+ */
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const account = asText(searchParams.get('account') || '1000003423')
+    const session = getSession(request)
+    if (!session) {
+      return Response.json(
+        { ok: false, message: 'Authentication required.' },
+        { status: 401 }
+      )
+    }
 
-    const sql = `
-      SELECT *
-      FROM transactions
-      WHERE from_account = '${account}' OR to_account = '${account}'
-      ORDER BY created_at DESC
-    `
-    const result = await runStatement(sql)
+    const result = await query(
+      `SELECT t.id, t.from_account, t.to_account, t.amount, t.description, t.status, t.created_at
+       FROM transactions t
+       JOIN accounts a ON a.account_number = t.from_account OR a.account_number = t.to_account
+       WHERE a.user_id = $1
+       GROUP BY t.id
+       ORDER BY t.created_at DESC
+       LIMIT 20`,
+      [session.userId]
+    )
 
     return Response.json({
       ok: true,
-      account,
       transactions: result.rows
     })
   } catch (reason) {

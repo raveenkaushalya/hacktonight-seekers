@@ -10,8 +10,7 @@ export async function GET() {
     return Response.json({
       ok: true,
       service: 'bank-api',
-      database: result.rows[0],
-      env: process.env.NODE_ENV
+      database: result.rows[0]
     })
   } catch (reason) {
     return serviceFailure(reason)

@@ -19,8 +19,9 @@ const bai = Bai_Jamjuree({
 })
 
 export const metadata: Metadata = {
-  title: 'Smart Spend - Banking Solutions',
-  description: 'Manage your finances with Smart Spend'
+  title: 'Nova Bank — Modern Banking Solutions',
+  description:
+    'Manage your finances securely with Nova Bank. Transfer money, pay bills, and track your spending.'
 }
 
 export default function RootLayout({

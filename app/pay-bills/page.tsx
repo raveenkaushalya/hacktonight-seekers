@@ -2,14 +2,14 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import Sidebar from '../../components/sidebar'
+import Sidebar from '@/components/sidebar'
 import {
   Search,
-  Settings,
+  Bell,
   CheckCircle2,
   AlertTriangle,
   ChevronLeft
-} from '../../components/Icons'
+} from '@/components/Icons'
 
 type Biller = {
   id: string
@@ -23,8 +23,8 @@ const billers: Biller[] = [
   { id: 'ceb', name: 'CEB', logo: '/billers/ceb.png' },
   { id: 'airtel', name: 'Airtel', logo: '/billers/airtel.png' },
   { id: 'dialog', name: 'Dialog', logo: '/billers/dialog.png' },
-  { id: 'slt', name: 'Sri Lanka Telecom', logo: '/billers/electricity.png' },
-  { id: 'peotv', name: 'PEO TV', logo: '/billers/mpesa.png' },
+  { id: 'slt', name: 'Sri Lanka Telecom', logo: '/billers/ceb.png' },
+  { id: 'peotv', name: 'PEO TV', logo: '/billers/cable-tv.png' },
   { id: 'hutch', name: 'Hutch', logo: '/billers/hutch.png' },
   { id: 'aia', name: 'AIA', logo: '/billers/aia.png' },
   { id: 'lolc', name: 'LOLC', logo: '/billers/lolc.png' },
@@ -33,7 +33,6 @@ const billers: Biller[] = [
 ]
 
 type Screen = 'select' | 'form' | 'success' | 'failed'
-
 const MOCK_BALANCE = 5000
 
 type FormErrors = {
@@ -61,39 +60,26 @@ export default function PayBillsPage() {
 
   function validateForm(): boolean {
     const newErrors: FormErrors = {}
-
-    if (!accountNumber.trim()) {
+    if (!accountNumber.trim())
       newErrors.accountNumber = 'Account number is required'
-    } else if (!/^[0-9]{6,16}$/.test(accountNumber.trim())) {
+    else if (!/^[0-9]{6,16}$/.test(accountNumber.trim()))
       newErrors.accountNumber = 'Enter a valid account number (6–16 digits)'
-    }
-
-    if (!billId.trim()) {
-      newErrors.billId = 'Bill ID is required'
-    } else if (billId.trim().length < 3) {
+    if (!billId.trim()) newErrors.billId = 'Bill ID is required'
+    else if (billId.trim().length < 3)
       newErrors.billId = 'Bill ID looks too short'
-    }
-
-    if (!dueAmount.trim()) {
-      newErrors.dueAmount = 'Due amount is required'
-    } else {
+    if (!dueAmount.trim()) newErrors.dueAmount = 'Due amount is required'
+    else {
       const amount = Number(dueAmount)
-      if (Number.isNaN(amount) || amount <= 0) {
+      if (Number.isNaN(amount) || amount <= 0)
         newErrors.dueAmount = 'Enter a valid amount greater than 0'
-      }
     }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   function handlePayNow() {
-    if (!validateForm()) {
-      return
-    }
-
+    if (!validateForm()) return
     const amount = Number(dueAmount)
-
     if (amount > MOCK_BALANCE) {
       setFailReason(
         `Insufficient Balance\nCurrent Balance is: Rs.${MOCK_BALANCE}`
@@ -101,9 +87,9 @@ export default function PayBillsPage() {
       setScreen('failed')
       return
     }
-
-    const confNum = Math.floor(10000000 + Math.random() * 90000000).toString()
-    setConfirmationNumber(confNum)
+    setConfirmationNumber(
+      Math.floor(10000000 + Math.random() * 90000000).toString()
+    )
     setScreen('success')
   }
 
@@ -118,48 +104,51 @@ export default function PayBillsPage() {
   }
 
   return (
-    <div className="page">
+    <div className="page-shell">
       <Sidebar />
 
-      <div className="content">
-        <header className="topbar">
+      <div className="page-content">
+        <header className="pb-topbar">
           <h1>Pay Bills</h1>
-          <div className="topbar-icons">
-            <Search size={20} />
-            <Settings size={20} />
-            <div className="avatar">
-              <Image
-                src="/avatar.png"
-                alt="Profile"
-                width={36}
-                height={36}
-                style={{ objectFit: 'cover', borderRadius: '50%' }}
-              />
-            </div>
+          <div className="pb-topbar-icons">
+            <button className="pb-icon-btn" aria-label="Search">
+              <Search size={20} />
+            </button>
+            <button className="pb-icon-btn" aria-label="Notifications">
+              <Bell size={20} />
+            </button>
+            <Image
+              src="/person-logo.png"
+              alt="Profile"
+              width={36}
+              height={36}
+              className="pb-avatar"
+            />
           </div>
         </header>
 
-        <main className="main">
-          <div className="card-wrapper">
+        <main className="pb-main">
+          <div className="pb-card-wrapper">
             {screen === 'select' && (
-              <div className="card">
-                <div className="biller-grid">
+              <div className="nova-card pb-card animate-fade-in">
+                <h2 className="pb-section-title">Select a Biller</h2>
+                <div className="pb-biller-grid">
                   {billers.map((biller) => (
                     <button
                       key={biller.id}
                       onClick={() => handleSelectBiller(biller)}
-                      className="biller-btn"
+                      className="pb-biller-btn"
                     >
-                      <div className="biller-icon logo-circle">
+                      <div className="pb-biller-icon">
                         <Image
                           src={biller.logo}
                           alt={biller.name}
-                          width={44}
-                          height={44}
+                          width={40}
+                          height={40}
                           style={{ objectFit: 'contain' }}
                         />
                       </div>
-                      <span className="biller-name">{biller.name}</span>
+                      <span className="pb-biller-name">{biller.name}</span>
                     </button>
                   ))}
                 </div>
@@ -167,17 +156,16 @@ export default function PayBillsPage() {
             )}
 
             {screen === 'form' && selectedBiller && (
-              <div className="card">
+              <div className="nova-card pb-card animate-fade-in">
                 <button
-                  className="back-btn"
+                  className="pb-back-btn"
                   onClick={() => setScreen('select')}
                 >
-                  <ChevronLeft size={16} />
-                  Back to billers
+                  <ChevronLeft size={16} /> Back to billers
                 </button>
 
-                <div className="biller-header">
-                  <div className="biller-icon small logo-circle">
+                <div className="pb-biller-header">
+                  <div className="pb-biller-icon small">
                     <Image
                       src={selectedBiller.logo}
                       alt={selectedBiller.name}
@@ -186,92 +174,100 @@ export default function PayBillsPage() {
                       style={{ objectFit: 'contain' }}
                     />
                   </div>
-                  <span className="biller-header-name">
+                  <span className="pb-biller-header-name">
                     {selectedBiller.name}
                   </span>
                 </div>
 
-                <div className="field">
-                  <label>Account number</label>
+                <div className="pb-field">
+                  <label className="nova-label">Account Number</label>
                   <input
                     value={accountNumber}
                     onChange={(e) => setAccountNumber(e.target.value)}
                     placeholder="Enter account number"
-                    className={errors.accountNumber ? 'input-error' : ''}
+                    className={`nova-input ${errors.accountNumber ? 'nova-input-error' : ''}`}
                   />
                   {errors.accountNumber && (
-                    <span className="error-text">{errors.accountNumber}</span>
+                    <span className="pb-error">{errors.accountNumber}</span>
                   )}
                 </div>
 
-                <div className="field">
-                  <label>Bill ID</label>
+                <div className="pb-field">
+                  <label className="nova-label">Bill ID</label>
                   <input
                     value={billId}
                     onChange={(e) => setBillId(e.target.value)}
                     placeholder="Enter bill ID"
-                    className={errors.billId ? 'input-error' : ''}
+                    className={`nova-input ${errors.billId ? 'nova-input-error' : ''}`}
                   />
                   {errors.billId && (
-                    <span className="error-text">{errors.billId}</span>
+                    <span className="pb-error">{errors.billId}</span>
                   )}
                 </div>
 
-                <div className="field">
-                  <label>Due Amount</label>
+                <div className="pb-field">
+                  <label className="nova-label">Due Amount</label>
                   <input
                     type="number"
                     value={dueAmount}
                     onChange={(e) => setDueAmount(e.target.value)}
                     placeholder="0.00"
-                    className={errors.dueAmount ? 'input-error' : ''}
+                    className={`nova-input ${errors.dueAmount ? 'nova-input-error' : ''}`}
                   />
                   {errors.dueAmount && (
-                    <span className="error-text">{errors.dueAmount}</span>
+                    <span className="pb-error">{errors.dueAmount}</span>
                   )}
                 </div>
 
-                <div className="field">
-                  <label>Remarks</label>
+                <div className="pb-field">
+                  <label className="nova-label">Remarks</label>
                   <input
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}
                     placeholder="Optional"
+                    className="nova-input"
                   />
                 </div>
 
-                <button className="pay-now-btn" onClick={handlePayNow}>
+                <button
+                  className="nova-btn nova-btn-primary pb-pay-btn"
+                  onClick={handlePayNow}
+                >
                   PAY NOW
                 </button>
               </div>
             )}
 
             {screen === 'success' && (
-              <div className="card status-card">
-                <div className="status-circle success">
-                  <CheckCircle2 size={64} />
+              <div className="nova-card pb-card pb-status-card animate-fade-in">
+                <div className="pb-status-circle success">
+                  <CheckCircle2 size={48} />
                 </div>
                 <h2>Payment Successful!</h2>
-                <p className="status-sub">
-                  Confirmation number : {confirmationNumber}
+                <p className="pb-status-sub">
+                  Confirmation: {confirmationNumber}
                 </p>
-                <button className="back-home-btn" onClick={resetToHome}>
-                  <ChevronLeft size={16} />
-                  BACK TO HOME
+                <button
+                  className="nova-btn nova-btn-primary"
+                  onClick={resetToHome}
+                >
+                  <ChevronLeft size={16} /> BACK TO HOME
                 </button>
               </div>
             )}
 
             {screen === 'failed' && (
-              <div className="card status-card">
-                <div className="status-circle failed">
-                  <AlertTriangle size={64} />
+              <div className="nova-card pb-card pb-status-card animate-fade-in">
+                <div className="pb-status-circle failed">
+                  <AlertTriangle size={48} />
                 </div>
-                <h2>Payment Failed!</h2>
-                <p className="status-sub">{failReason}</p>
-                <button className="back-home-btn" onClick={resetToHome}>
-                  <ChevronLeft size={16} />
-                  BACK TO HOME
+                <h2>Payment Failed</h2>
+                <p className="pb-status-sub">{failReason}</p>
+                <button
+                  className="nova-btn nova-btn-primary"
+                  onClick={resetToHome}
+                >
+                  <ChevronLeft size={16} /> BACK TO HOME
                 </button>
               </div>
             )}
@@ -280,229 +276,194 @@ export default function PayBillsPage() {
       </div>
 
       <style jsx>{`
-        .page {
-          display: flex;
-          min-height: 100vh;
-          background: #f3f4f6;
-        }
-        .content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        .topbar {
+        .pb-topbar {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background: white;
-          padding: 1.1rem 2.5rem;
-          border-bottom: 1px solid #eee;
+          padding: 1.5rem 2rem;
         }
-        .topbar h1 {
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: #333;
+        .pb-topbar h1 {
+          font-size: 1.75rem;
+          font-weight: 800;
+          color: var(--text-primary);
         }
-        .topbar-icons {
+        .pb-topbar-icons {
           display: flex;
           align-items: center;
-          gap: 1.5rem;
-          color: #666;
+          gap: 0.75rem;
         }
-        .avatar {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          overflow: hidden;
+        .pb-icon-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          border: none;
+          background: var(--bg-card);
+          color: var(--text-secondary);
           display: flex;
           align-items: center;
           justify-content: center;
+          cursor: pointer;
+          box-shadow: var(--shadow-sm);
+          transition: all 200ms;
         }
-        .main {
+        .pb-icon-btn:hover {
+          box-shadow: var(--shadow-md);
+        }
+        .pb-avatar {
+          border-radius: 12px !important;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .pb-main {
           flex: 1;
           display: flex;
           justify-content: center;
-          padding: 3rem;
+          padding: 0 2rem 2rem;
         }
-        .card-wrapper {
+        .pb-card-wrapper {
           width: 100%;
-          max-width: 760px;
+          max-width: 720px;
         }
-        .card {
-          background: white;
-          border-radius: 24px;
-          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
-          padding: 3rem;
+        .pb-card {
+          padding: 2rem;
         }
-        .biller-grid {
+        .pb-section-title {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 1.5rem;
+        }
+
+        .pb-biller-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 2.5rem 2rem;
+          gap: 1.5rem;
         }
-        .biller-btn {
+        .pb-biller-btn {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 0.65rem;
+          gap: 0.5rem;
           background: none;
           border: none;
           cursor: pointer;
+          transition: transform 200ms var(--ease-out);
         }
-        .biller-icon {
-          width: 76px;
-          height: 76px;
-          border-radius: 50%;
+        .pb-biller-btn:hover {
+          transform: translateY(-3px);
+        }
+        .pb-biller-icon {
+          width: 64px;
+          height: 64px;
+          border-radius: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: transform 0.15s, box-shadow 0.15s;
+          background: var(--ivory-100);
+          border: 1px solid var(--ivory-200);
+          transition: box-shadow 200ms;
         }
-        .biller-icon.small {
-          width: 48px;
-          height: 48px;
+        .pb-biller-icon.small {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
         }
-        .logo-circle {
-          background: white;
-          border: 1px solid #eee;
+        .pb-biller-btn:hover .pb-biller-icon {
+          box-shadow: var(--shadow-md);
         }
-        .biller-btn:hover .biller-icon {
-          transform: scale(1.07);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-        }
-        .biller-name {
-          font-size: 0.82rem;
-          color: #555;
+        .pb-biller-name {
+          font-size: 0.78rem;
+          color: var(--text-secondary);
           text-align: center;
-          line-height: 1.25;
           font-weight: 500;
+          line-height: 1.2;
         }
-        .back-btn {
+
+        .pb-back-btn {
           display: flex;
           align-items: center;
           gap: 0.25rem;
           background: none;
           border: none;
-          color: #888;
-          font-size: 0.9rem;
+          color: var(--text-muted);
+          font-size: 0.85rem;
           cursor: pointer;
-          margin-bottom: 1.75rem;
-          padding: 0;
+          margin-bottom: 1.5rem;
+          transition: color 200ms;
         }
-        .back-btn:hover {
-          color: #555;
+        .pb-back-btn:hover {
+          color: var(--text-secondary);
         }
-        .biller-header {
+        .pb-biller-header {
           display: flex;
           align-items: center;
-          gap: 0.85rem;
-          margin-bottom: 2.25rem;
+          gap: 0.75rem;
+          margin-bottom: 1.75rem;
         }
-        .biller-header-name {
-          font-weight: 600;
+        .pb-biller-header-name {
+          font-weight: 700;
           font-size: 1.05rem;
-          color: #333;
+          color: var(--text-primary);
         }
-        .field {
-          display: flex;
-          flex-direction: column;
-          gap: 0.4rem;
-          margin-bottom: 1.4rem;
+
+        .pb-field {
+          margin-bottom: 1.25rem;
         }
-        .field label {
-          font-size: 0.9rem;
-          color: #666;
-          font-weight: 500;
+        .pb-error {
+          font-size: 0.75rem;
+          color: var(--error);
+          margin-top: 0.25rem;
+          display: block;
         }
-        .field input {
-          background: #f3f4f6;
-          border: 1.5px solid transparent;
-          border-radius: 12px;
-          padding: 0.85rem 1.1rem;
-          font-size: 0.95rem;
-          color: #333;
-          outline: none;
-          transition: box-shadow 0.15s, border-color 0.15s;
-        }
-        .field input:focus {
-          box-shadow: 0 0 0 2px #d8b9d6;
-        }
-        .field input.input-error {
-          border-color: #ef4444;
-          background: #fef2f2;
-        }
-        .error-text {
-          font-size: 0.78rem;
-          color: #ef4444;
-          margin-top: 0.15rem;
-        }
-        .pay-now-btn {
-          margin-top: 1.75rem;
+        .pb-pay-btn {
           width: 100%;
-          background: #9a5c97;
-          color: white;
-          font-weight: 600;
-          font-size: 1rem;
+          margin-top: 1.5rem;
           padding: 1rem;
-          border: none;
-          border-radius: 999px;
-          cursor: pointer;
-          transition: background 0.2s;
         }
-        .pay-now-btn:hover {
-          background: #450043;
-        }
-        .status-card {
+
+        /* Status */
+        .pb-status-card {
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          padding: 4rem 3rem;
+          padding: 3rem 2rem;
         }
-        .status-circle {
-          width: 112px;
-          height: 112px;
+        .pb-status-circle {
+          width: 96px;
+          height: 96px;
           border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          margin-bottom: 1.75rem;
+          margin-bottom: 1.5rem;
         }
-        .status-circle.success {
-          background: #dcfce7;
-          color: #22c55e;
+        .pb-status-circle.success {
+          background: var(--success-bg);
+          color: var(--success);
         }
-        .status-circle.failed {
-          background: #fee2e2;
-          color: #ef4444;
+        .pb-status-circle.failed {
+          background: var(--error-bg);
+          color: var(--error);
         }
-        .status-card h2 {
-          font-size: 1.4rem;
-          font-weight: 600;
-          color: #333;
-          margin-bottom: 0.6rem;
+        .pb-status-card h2 {
+          font-size: 1.35rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin-bottom: 0.5rem;
         }
-        .status-sub {
-          font-size: 0.9rem;
-          color: #999;
-          margin-bottom: 2.25rem;
+        .pb-status-sub {
+          font-size: 0.85rem;
+          color: var(--text-muted);
+          margin-bottom: 2rem;
           white-space: pre-line;
         }
-        .back-home-btn {
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-          background: #9a5c97;
-          color: white;
-          font-weight: 600;
-          font-size: 0.9rem;
-          padding: 0.85rem 2.25rem;
-          border: none;
-          border-radius: 999px;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        .back-home-btn:hover {
-          background: #450043;
+
+        @media (max-width: 640px) {
+          .pb-biller-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+          }
         }
       `}</style>
     </div>
