@@ -119,11 +119,13 @@ export default function Sidebar() {
           {menuItems.map((item) => {
             const isActive = pathname === item.path
             return (
-              <Link key={item.label} href={item.path} className="menu-link">
-                <button className={`menu-item ${isActive ? 'active' : ''}`}>
-                  {item.label === 'DASHBOARD' && <LayoutGrid size={18} />}
-                  {item.label}
-                </button>
+              <Link
+                key={item.label}
+                href={item.path}
+                className={`menu-item ${isActive ? 'active' : ''}`}
+              >
+                {item.label === 'DASHBOARD' && <LayoutGrid size={18} />}
+                <span>{item.label}</span>
               </Link>
             )
           })}
@@ -182,10 +184,6 @@ export default function Sidebar() {
           gap: 1rem;
         }
 
-        .menu-link {
-          text-decoration: none;
-        }
-
         .menu-item {
           height: 50px;
           border: none;
@@ -202,6 +200,7 @@ export default function Sidebar() {
           gap: 0.75rem;
           cursor: pointer;
           width: 100%;
+          text-decoration: none;
         }
 
         .menu-item.active {
