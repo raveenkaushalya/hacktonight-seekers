@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { type FormEvent, useState } from 'react'
 import AuthButton from '@/components/authButton'
 
 export default function LoginPage() {
@@ -36,7 +36,11 @@ export default function LoginPage() {
         return
       }
 
-      router.push('/dashboard')
+      if (data.user && data.user.role === 'admin') {
+        router.push('/admin')
+      } else {
+        router.push('/dashboard')
+      }
     } catch {
       setError('Network error. Please try again.')
     } finally {

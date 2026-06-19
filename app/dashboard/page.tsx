@@ -1,37 +1,142 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { Bell, ChevronRight, Search, TrendingUp } from '@/components/Icons'
 import Sidebar from '@/components/sidebar'
-import { Bell, Search, ChevronRight, TrendingUp } from '@/components/Icons'
-
-const transactions = [
-  {
-    date: 'Oct 16, 2025',
-    account: '......3423',
-    amount: '-Rs. 4,500.00',
-    type: 'debit'
-  },
-  {
-    date: 'Oct 16, 2025',
-    account: '......4876',
-    amount: '-Rs. 10,000.00',
-    type: 'debit'
-  },
-  {
-    date: 'Oct 16, 2025',
-    account: '......6754',
-    amount: '+Rs. 9,870.00',
-    type: 'credit'
-  }
-]
-
-const quickActions = [
-  { label: 'Transfer', href: '/bank-transfer', emoji: '💸' },
-  { label: 'Pay Bills', href: '/pay-bills', emoji: '🧾' },
-  { label: 'Statement', href: '/e-statement', emoji: '📄' },
-  { label: 'Smart Spend', href: '/smart-spend', emoji: '📊' }
-]
 
 export default function Dashboard() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(true)
+  const [userProfile, setUserProfile] = useState<any>(null)
+  const [accounts, setAccounts] = useState<any[]>([])
+  const [transactions, setTransactions] = useState<any[]>([])
+
+  useEffect(() => {
+    async function loadDashboard() {
+      try {
+        // 1. Fetch Session
+        const authRes = await fetch('/api/auth/login')
+        if (!authRes.ok) {
+          router.push('/login')
+          return
+        }
+        const authData = await authRes.json()
+        if (!authData.ok) {
+          router.push('/login')
+          return
+        }
+        if (authData.user && authData.user.role === 'admin') {
+          router.push('/admin')
+          return
+        }
+        setUserProfile(authData.user)
+
+        // 2. Fetch Accounts
+        const accsRes = await fetch('/api/accounts')
+        let userAccounts: any[] = []
+        if (accsRes.ok) {
+          const accsData = await accsRes.json()
+          if (accsData.ok) {
+            userAccounts = accsData.accounts || []
+            setAccounts(userAccounts)
+          }
+        }
+
+        // 3. Fetch Transactions
+        const txRes = await fetch('/api/transactions')
+        if (txRes.ok) {
+          const txData = await txRes.json()
+          if (txData.ok && txData.transactions) {
+            const formattedTx = txData.transactions.map((tx: any) => {
+              const isDebit = userAccounts.some(
+                (acc) => acc.account_number === tx.from_account
+              )
+              const type = isDebit ? 'debit' : 'credit'
+              const prefix = isDebit ? '-' : '+'
+              const displayAccount = isDebit
+                ? `To ......${tx.to_account.slice(-4)}`
+                : `From ......${tx.from_account.slice(-4)}`
+
+              return {
+                date: new Date(tx.created_at).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric'
+                }),
+                account: displayAccount,
+                amount: `${prefix}Rs. ${parseFloat(tx.amount).toLocaleString(
+                  'en-US',
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  }
+                )}`,
+                type,
+                description: tx.description
+              }
+            })
+            setTransactions(formattedTx)
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadDashboard()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="dash-loading-screen">
+        <div className="dash-spinner"></div>
+        <p>Loading your dashboard...</p>
+        <style jsx>{`
+          .dash-loading-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: #1d0730;
+            color: #fff;
+            font-family: var(--font-bai), sans-serif;
+            gap: 1.5rem;
+          }
+          .dash-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #bde65e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
+  const totalBalance = accounts.reduce(
+    (sum, acc) => sum + parseFloat(acc.balance || 0),
+    0
+  )
+  const firstName = userProfile?.full_name
+    ? userProfile.full_name.split(' ')[0]
+    : 'User'
+
+  const quickActions = [
+    { label: 'Transfer', href: '/bank-transfer', emoji: '💸' },
+    { label: 'Pay Bills', href: '/pay-bills', emoji: '🧾' },
+    { label: 'Statement', href: '/e-statement', emoji: '📄' },
+    { label: 'Smart Spend', href: '/smart-spend', emoji: '📊' }
+  ]
+
   return (
     <div className="page-shell">
       <Sidebar />
@@ -58,10 +163,16 @@ export default function Dashboard() {
             <div className="welcome-card">
               <div className="welcome-text">
                 <p className="welcome-greeting">Good evening,</p>
-                <h2 className="welcome-name">Dilara!</h2>
+                <h2 className="welcome-name">{firstName}!</h2>
                 <div className="balance-chip">
                   <span className="balance-label">Current Balance</span>
-                  <span className="balance-amount">Rs. 100,000</span>
+                  <span className="balance-amount">
+                    Rs.{' '}
+                    {totalBalance.toLocaleString('en-US', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    })}
+                  </span>
                 </div>
               </div>
               <img
@@ -118,21 +229,35 @@ export default function Dashboard() {
             </div>
 
             <div className="transactions-card">
-              {transactions.map((t, i) => (
-                <div key={i} className="transaction-row">
-                  <div className={`transaction-icon ${t.type}`}>
-                    <TrendingUp size={16} />
+              {transactions.length > 0 ? (
+                transactions.map((t, i) => (
+                  <div key={i} className="transaction-row">
+                    <div className={`transaction-icon ${t.type}`}>
+                      <TrendingUp size={16} />
+                    </div>
+                    <div className="transaction-details">
+                      <span className="transaction-label">{t.account}</span>
+                      <span className="transaction-date">{t.date}</span>
+                      {t.description && (
+                        <span
+                          className="transaction-desc text-muted"
+                          style={{ fontSize: '0.75rem', marginTop: '2px' }}
+                        >
+                          {t.description}
+                        </span>
+                      )}
+                    </div>
+                    <span className={`transaction-amount ${t.type}`}>
+                      {t.amount}
+                    </span>
+                    <span className="transaction-badge">Success</span>
                   </div>
-                  <div className="transaction-details">
-                    <span className="transaction-label">{t.account}</span>
-                    <span className="transaction-date">{t.date}</span>
-                  </div>
-                  <span className={`transaction-amount ${t.type}`}>
-                    {t.amount}
-                  </span>
-                  <span className="transaction-badge">Success</span>
+                ))
+              ) : (
+                <div className="py-8 text-center text-muted">
+                  No recent transactions found.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

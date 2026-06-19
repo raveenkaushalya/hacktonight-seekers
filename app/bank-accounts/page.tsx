@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
+import React, { Suspense, useEffect, useState } from 'react'
+import { Bell, Search } from '@/components/Icons'
 import Sidebar from '@/components/sidebar'
-import { Search, Bell } from '@/components/Icons'
 
 type Screen = 'list' | 'add' | 'edit'
 

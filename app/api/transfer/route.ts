@@ -1,9 +1,9 @@
 import {
-  query,
   asText,
-  serviceFailure,
   getSession,
-  pool
+  pool,
+  query,
+  serviceFailure
 } from '@/lib/platform-db'
 
 /**

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
+import { type FormEvent, useState } from 'react'
 import AuthButton from '@/components/authButton'
 
 export default function SignUpPage() {

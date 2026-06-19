@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
 import Image from 'next/image'
-import Sidebar from '@/components/sidebar'
+import { useState } from 'react'
 import {
-  Search,
+  AlertTriangle,
   Bell,
   CheckCircle2,
-  AlertTriangle,
-  ChevronLeft
+  ChevronLeft,
+  Search
 } from '@/components/Icons'
+import Sidebar from '@/components/sidebar'
 
 type Biller = {
   id: string

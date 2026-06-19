@@ -3,15 +3,15 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  LayoutGrid,
-  Wallet,
   ArrowUpDown,
-  Receipt,
-  PieChart,
   FileText,
-  Settings,
   HelpCircle,
-  LogOut
+  LayoutGrid,
+  LogOut,
+  PieChart,
+  Receipt,
+  Settings,
+  Wallet
 } from './Icons'
 
 const menuItems = [

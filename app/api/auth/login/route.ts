@@ -1,11 +1,11 @@
-import {
-  query,
-  asText,
-  serviceFailure,
-  createSessionToken,
-  getSession
-} from '@/lib/platform-db'
 import bcrypt from 'bcryptjs'
+import {
+  asText,
+  createSessionToken,
+  getSession,
+  query,
+  serviceFailure
+} from '@/lib/platform-db'
 
 /**
  * POST /api/auth/login — authenticate user with username + password

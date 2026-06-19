@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { Bell, Search, TrendingUp } from '@/components/Icons'
 import Sidebar from '@/components/sidebar'
-import { Search, Bell, TrendingUp } from '@/components/Icons'
 
 const categories = [
   { name: 'Food & Dining', amount: 12500, color: '#ef4444', percent: 32 },

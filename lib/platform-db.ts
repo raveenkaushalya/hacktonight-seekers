@@ -1,5 +1,5 @@
-import { Pool } from 'pg'
 import { createHmac } from 'node:crypto'
+import { Pool } from 'pg'
 
 const connectionString =
   process.env.DATABASE_URL ||
@@ -58,10 +58,10 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 //   admin   -> admin
 const seed = `
 INSERT INTO users (id, username, password, role, full_name, nic, email) VALUES
-  (1, 'dilara', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'customer', 'Dilara Perera', '200112345678', 'dilara@example.test'),
-  (2, 'kasun', '$2a$10$IQoLwJ5aAnkHzSJsUQ0BGeSjUm6Y6s7VzKXiTzSLxHzonQPW4wx2K', 'customer', 'Kasun Wickramanayake', '199812345678', 'kasun@example.test'),
-  (3, 'admin', '$2a$10$Vz5Z8t4qRqKpXqXqXqXqXuXqXqXqXqXqXqXqXqXqXqXqXqXqXqXqXq', 'admin', 'Platform Administrator', '000000000000', 'root@example.test')
-ON CONFLICT (id) DO NOTHING;
+  (1, 'dilara', '$2b$10$jGB6/XSbJaRdq771.GyxYOt78EE7x/jQVssu1tkfggdw4jkEshzIe', 'customer', 'Dilara Perera', '200112345678', 'dilara@example.test'),
+  (2, 'kasun', '$2b$10$ey6MLmamr8Xib8LIrDDxZObFuMraAB1gApqOp1yJal13LjNlLXyVu', 'customer', 'Kasun Wickramanayake', '199812345678', 'kasun@example.test'),
+  (3, 'admin', '$2b$10$3B4r3n2.ixNskPegP2e9tOaZrgnVsRlPe.ot.beEQpxFBJk53rDZS', 'admin', 'Platform Administrator', '000000000000', 'root@example.test')
+ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password;
 
 INSERT INTO accounts (user_id, account_number, account_name, balance, pin) VALUES
   (1, '1000003423', 'Dilara Savings', 100000.00, '1234'),

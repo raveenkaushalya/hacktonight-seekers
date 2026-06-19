@@ -1,4 +1,4 @@
-import { query, serviceFailure, getSession } from '@/lib/platform-db'
+import { getSession, query, serviceFailure } from '@/lib/platform-db'
 
 /**
  * GET /api/accounts — returns accounts for the authenticated user only

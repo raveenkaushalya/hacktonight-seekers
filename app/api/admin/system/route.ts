@@ -1,4 +1,4 @@
-import { query, serviceFailure, getSession } from '@/lib/platform-db'
+import { getSession, query, serviceFailure } from '@/lib/platform-db'
 
 /**
  * GET /api/admin/system — admin-only system overview

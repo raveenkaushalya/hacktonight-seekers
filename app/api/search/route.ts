@@ -1,4 +1,4 @@
-import { query, asText, serviceFailure, getSession } from '@/lib/platform-db'
+import { asText, getSession, query, serviceFailure } from '@/lib/platform-db'
 
 /**
  * GET /api/search — search users, accounts, transactions

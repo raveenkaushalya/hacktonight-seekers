@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { Bell, Search } from '@/components/Icons'
 import Sidebar from '@/components/sidebar'
-import { Search, Bell } from '@/components/Icons'
 
 type Errors = Partial<{
   amount: string
